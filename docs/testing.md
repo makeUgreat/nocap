@@ -57,7 +57,7 @@ related:
   - ID는 테스트 태그에만 있어야 함. 이름에도 ID가 있으면 nocap이 어느 쪽으로 연결하는지 알기 어려움
 
 ```ts
-// parse-spec.test.ts
+// spec-document.markdown.parser.test.ts
 
 // @MD-001
 describe('명세 태그가 있는 리스트 항목마다 명세 항목 생성', () => {
@@ -81,7 +81,7 @@ describe('빈 문서', () => {
 - `pnpm test`는 둘 다 실행함. `pnpm test:unit`, `pnpm test:integration`은 하나만 실행함
 
 ## 테스트 배치
-- 단위 테스트 파일은 대상 파일 옆에 `<대상>.test.ts`로 둠. 예: `src/infrastructure/markdown/parse-spec.test.ts`
+- 단위 테스트 파일은 대상 파일 옆에 `<대상>.test.ts`로 둠. 예: `src/infrastructure/markdown/spec-document.markdown.parser.test.ts`
 - 통합 테스트 파일은 `test/` 아래에 `<대상>.integration-test.ts`로 둠. 예: `test/dependency-cruiser/config.integration-test.ts`
   - 통합 테스트는 어댑터를 실제로 초기화하는 준비 코드가 늘어남. 이 코드를 `src/` 밖에 모음
 - 통합 테스트에서 어댑터나 도구를 준비하고 실행하는 코드는 같은 디렉토리의 `<대상>.support.ts`에 둠. 예: `test/dependency-cruiser/config.support.ts`

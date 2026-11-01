@@ -30,5 +30,9 @@
     "dependency-cruiser": "^18.7.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "@lezer/common": "^1.5.5",
+    "@lezer/markdown": "^1.8.1"
   }
 }
