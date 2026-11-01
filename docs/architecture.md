@@ -52,6 +52,32 @@ flowchart TD
   - 예: 출력 포매터는 CLI와 라이브러리 API가 함께 씀. CLI 디렉토리 안에 두면 라이브러리 API가 CLI에 의존하게 됨
 - 디렉토리는 그 안에 들어갈 코드를 만들 때 만듦
 
+## 파일 이름
+- `src/`의 파일 이름은 `<대상>[.<기술>].<종류>.ts`로 씀. 클래스 이름도 같은 순서로 붙임
+  - 예: `spec-document.parser.ts`의 `SpecDocumentParser`, `spec-document.markdown.parser.ts`의 `SpecDocumentMarkdownParser`
+  - 기술은 포트의 구현에만 붙임
+  - 경로 없이 파일 이름만 보고 역할을 알 수 있음
+- 종류는 아래 목록에서만 고름. 새 종류는 목록에 먼저 더함
+
+| 종류 | 뜻 |
+|---|---|
+| `parser` | 문서를 읽어 도메인 객체를 만드는 포트와 그 구현 |
+
+- 도메인 모델 파일은 종류 없이 `<대상>.ts`로 씀. 예: `spec-item.ts`의 `SpecItem`
+  - `entity`, `vo` 같은 분류는 모델링 판단임. 판단이 바뀌어도 파일 이름은 바뀌지 않아야 함
+- `src/index.ts`는 이 규칙의 예외임
+
+## 보조 함수
+- 클래스가 맡은 일을 해내는 과정의 일부인 함수는 `private` 메서드로 둠
+  - 클래스만 읽으면 그 클래스의 책임 전체가 보임
+  - 예: `SpecDocumentMarkdownParser`의 `specTagAt`
+- 어느 클래스에서나 쓸 수 있는 일반 계산은 export하지 않는 모듈 함수로 클래스 아래에 둠
+  - 예: lezer 노드의 자식 목록을 만드는 `childrenOf`
+  - 모듈 함수는 `function` 선언으로 씀. `function` 선언은 정의보다 위에서 호출할 수 있어서 클래스를 파일 맨 위에 둘 수 있음
+- `this`를 쓰지 않는 `private` 메서드도 인스턴스 메서드로 둠
+  - `this.` 호출이 클래스 이름 호출보다 읽기 쉬움
+  - 클래스가 상태를 가지게 되면 `this`를 쓰지 않는 메서드를 `private static`으로 바꿈. 상태에 기대는 것처럼 읽히지 않게 하기 위함
+
 ## 제약
 - nocap은 ESM 전용으로 배포함
   - Node 22.12부터 `require(esm)`이 기본으로 켜짐. CJS 사용자도 ESM 패키지를 불러올 수 있음
