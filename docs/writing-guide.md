@@ -7,7 +7,9 @@ applies_to:
 # 문서 작성 가이드라인
 
 ## 적용 범위
-- 컨벤션, 아키텍처, 명세를 정의하는 오래 유지되는 Markdown 문서에 적용함
+- 컨벤션, 아키텍처를 정의하는 오래 유지되는 Markdown 문서에 적용함
+- 명세 항목을 담은 문서(`docs/specs/` 아래의 `README.md`가 아닌 파일)는 이 가이드 대신 [명세 작성 규칙](specs/README.md#작성-규칙)을 따름
+  - 명세 문서는 nocap이 입력으로 읽는 데이터임. 사람이 읽는 설명 문서와 성격이 다름
 - `AGENTS.md` 같은 agent instruction 파일, 임시 작업 노트, 생성 문서는 제외함
   - agent instruction 파일은 매 작업마다 읽히는 명령 목록임. 설명 문서와 쓰는 목적이 다름
 
