@@ -73,5 +73,16 @@ describe('빈 문서', () => {
 })
 ```
 
+## 단위 테스트와 통합 테스트
+- 단위 테스트는 프로세스 안에서 대상 코드만 실행함. 파일 시스템이나 외부 도구를 쓰지 않음
+  - 예: 명세 파서 테스트는 문자열을 넣고 결과를 받음
+- 통합 테스트는 파일 시스템이나 외부 도구를 실제로 씀
+  - 예: dependency-cruiser 설정 테스트는 임시 파일을 쓰고 dependency-cruiser를 실행함
+- `pnpm test`는 둘 다 실행함. `pnpm test:unit`, `pnpm test:integration`은 하나만 실행함
+
 ## 테스트 배치
-- 테스트 파일은 대상 파일 옆에 `<대상>.test.ts`로 둠. 예: `src/infrastructure/markdown/parse-spec.test.ts`
+- 단위 테스트 파일은 대상 파일 옆에 `<대상>.test.ts`로 둠. 예: `src/infrastructure/markdown/parse-spec.test.ts`
+- 통합 테스트 파일은 `test/` 아래에 `<대상>.integration-test.ts`로 둠. 예: `test/dependency-cruiser/config.integration-test.ts`
+  - 통합 테스트는 어댑터를 실제로 초기화하는 준비 코드가 늘어남. 이 코드를 `src/` 밖에 모음
+- 통합 테스트에서 어댑터나 도구를 준비하고 실행하는 코드는 같은 디렉토리의 `<대상>.support.ts`에 둠. 예: `test/dependency-cruiser/config.support.ts`
+  - 테스트 파일에는 입력과 기대 결과만 남음

@@ -27,6 +27,8 @@ related:
 - 바깥 레이어는 중간 레이어를 건너뛰고 더 안쪽 레이어를 import할 수 있음
   - 포트와 포매터는 `domain` 타입을 직접 씀
   - 건너뛰기를 막으면 `domain` 타입과 같은 모양의 전달용 타입과 변환 코드가 필요함
+- dependency-cruiser가 이 규칙을 검사함. 설정은 `packages/nocap/dependency-cruiser/config.ts`에 있음
+  - type-only import도 의존으로 셈. 레이어 사이 import는 대부분 type-only임
 
 ```mermaid
 flowchart TD
