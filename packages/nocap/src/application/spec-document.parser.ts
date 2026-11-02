@@ -2,8 +2,10 @@ import type { SpecItem } from '../domain/spec-item.js'
 
 export interface SpecDocumentParser {
   /**
-   * 명세 문서 1개의 내용에서 명세 항목을 찾는다.
-   * 명세 항목은 문서에 나온 순서대로 반환한다. 명세 항목이 없으면 빈 배열을 반환한다.
+   * Finds the spec items in one spec document.
+   *
+   * @param content - Full text of the spec document.
+   * @returns Spec items in the order they appear in the document. Empty when the document has none.
    */
   parse(content: string): SpecItem[]
 }

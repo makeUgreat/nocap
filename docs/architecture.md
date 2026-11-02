@@ -16,9 +16,10 @@ related:
   - nocap의 변경은 대부분 바깥쪽에서 일어남. 예: 테스트 언어 추가, 실행 결과 입력, 출력 형식 추가, 명령 추가
   - 커버리지 판정 규칙은 거의 바뀌지 않음
   - 바뀌는 부분과 바뀌지 않는 부분을 나누면 입력 형식을 추가해도 판정 규칙을 고치지 않음
-- `domain`은 커버리지 판정 규칙을 가짐
-- (미구현) `application`은 유스케이스 흐름을 조립하고 포트 interface를 정의함
-- (미구현) `infrastructure`는 포트를 구현함
+- (미구현) `domain`은 커버리지 판정 규칙을 가짐
+- `application`은 포트 interface를 정의함
+- (미구현) `application`은 유스케이스 흐름을 조립함
+- `infrastructure`는 포트를 구현함
 - (미구현) `presentation`은 CLI와 출력 포매터를 가짐
 - 라이브러리 진입점은 `presentation`에 속함
 
