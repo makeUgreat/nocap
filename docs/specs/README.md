@@ -31,4 +31,5 @@ related:
 | 파일 | 접두어 | 범위 |
 |---|---|---|
 | [spec-parsing.md](spec-parsing.md) | `MD` | nocap이 명세 문서에서 명세 항목을 찾는 동작 |
+| [test-parsing.md](test-parsing.md) | `TP` | nocap이 테스트 파일에서 테스트 항목을 찾는 동작 |
 
