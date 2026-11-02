@@ -32,4 +32,5 @@ related:
 |---|---|---|
 | [spec-parsing.md](spec-parsing.md) | `MD` | nocap이 명세 문서에서 명세 항목을 찾는 동작 |
 | [test-parsing.md](test-parsing.md) | `TP` | nocap이 테스트 파일에서 테스트 항목을 찾는 동작 |
+| [coverage.md](coverage.md) | `CV` | nocap이 명세 항목과 테스트 항목을 연결해 커버 여부를 정하는 동작 |
 
