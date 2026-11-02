@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@lezer/common": "^1.5.5",
-    "@lezer/markdown": "^1.8.1"
+    "@lezer/markdown": "^1.8.1",
+    "oxc-parser": "^0.156.0"
   }
 }
