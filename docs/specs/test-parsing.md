@@ -19,6 +19,7 @@ related:
 ## 테스트 호출 인식
 - nocap은 `it`, `test`, `describe`, `suite` 호출만 테스트 호출로 인식함 <!-- nocap: TP-004 -->
 - nocap은 수식자가 붙은 호출도 테스트 호출로 인식함. 예: `it.skip()`, `test.each([...])()`, `describe.only()` <!-- nocap: TP-005 -->
+- nocap은 테스트 태그 바로 아래 줄에서 시작하는 호출 중 가장 바깥 호출 하나만 테스트 호출로 봄. 예: `describe('a', () => { it('b', () => {}) })`는 `describe`만 테스트 항목이 됨. `wrap(it('a', () => {}))`는 테스트 항목이 되지 않음 <!-- nocap: TP-026 -->
 
 ## 테스트 태그 인식
 - nocap은 본문이 `nocap:`으로 시작하는 라인 주석만 테스트 태그로 인식함. 예: `// TODO`, `// @ts-expect-error`, `// @A-001`, `// NOCAP: A-001`, `// nocap : A-001`은 테스트 태그가 아님 <!-- nocap: TP-021 -->

@@ -9,6 +9,7 @@
     "denyWarnings": true,
     "reportUnusedDisableDirectives": "warn"
   },
+  "ignorePatterns": ["packages/*/test/**/fixtures/**"],
   "env": {
     "builtin": true
   }

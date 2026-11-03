@@ -11,5 +11,6 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["src", "dependency-cruiser", "test"]
+  "include": ["src", "dependency-cruiser", "test"],
+  "exclude": ["test/**/fixtures"]
 }
