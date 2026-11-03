@@ -57,6 +57,7 @@ export class SpecId {
   }
 
   private static firstInvalidCharOf(candidate: string): string | undefined {
+    // oxlint-disable-next-line typescript/no-misused-spread -- an id is checked one code point at a time
     return [...candidate].find((char) => !ID_CHAR.test(char))
   }
 }
