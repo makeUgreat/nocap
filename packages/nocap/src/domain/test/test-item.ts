@@ -1,6 +1,6 @@
 import type { NotTag } from '../shared/id-candidates.js'
 import { Location } from '../shared/location.js'
-import type { TagSite } from '../shared/tag-site.js'
+import type { TagSite } from '../shared/tag-site.boundary.js'
 import { SpecIds } from '../spec/spec-ids.js'
 import { type InvalidTagReason, Tag } from '../spec/tag.js'
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { SpecItem, type SpecTagSite } from './spec-item.js'
+import { SpecItem } from './spec-item.js'
+import type { SpecTagSite } from './spec-tag-site.boundary.js'
 
 const listItem = (line: number, body: string, tagLine = line): SpecTagSite => ({
   line,

@@ -1,7 +1,7 @@
 import { extname } from 'node:path'
 import { type CallExpression, type Comment, type Expression, parseSync, type Program, type Super, Visitor } from 'oxc-parser'
 import type { TestFileParser, TestFileParseResult } from '../../application/test/test-file.parser.js'
-import type { TagSite } from '../../domain/shared/tag-site.js'
+import type { TagSite } from '../../domain/shared/tag-site.boundary.js'
 import { isNonEmpty } from '../../lib/non-empty.js'
 
 const SUPPORTED_LANGUAGES = new Map<string, 'ts' | 'tsx' | 'js' | 'jsx'>([

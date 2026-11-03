@@ -1,4 +1,4 @@
-import type { TagSite } from '../shared/tag-site.js'
+import type { TagSite } from '../shared/tag-site.boundary.js'
 import { TestItem, type TestInvalidTag } from './test-item.js'
 
 export class TestFile {

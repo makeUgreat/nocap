@@ -33,9 +33,16 @@ related:
   - driving adapter와 driven adapter는 서로 몰라야 함. 둘을 연결하는 일은 진입점만 함
   - `presentation`이 어댑터를 직접 만들면 command 테스트에 가짜 포트를 넣을 수 없음
   - 진입점이 2개 이상이 되어도 각 진입점이 같은 방식으로 조립함. `presentation` 안에 조립 코드가 흩어지지 않음
-- 바깥 레이어는 중간 레이어를 건너뛰고 더 안쪽 레이어를 import할 수 있음
-  - 포트와 포매터는 `domain` 타입을 직접 씀
-  - 건너뛰기를 막으면 `domain` 타입과 같은 모양의 전달용 타입과 변환 코드가 필요함
+- `infrastructure`는 `domain`이 정한 경계 타입만 import함. 도메인 모델은 import하지 않음. 예: 파서는 `TagSite`를 만들어 돌려주고 `SpecItem`은 쓰지 않음
+  - 포트는 경계 타입으로 입출력을 정함. 경계 타입이 바뀌지 않으면 도메인 모델을 고쳐도 어댑터를 고치지 않음
+  - 어댑터의 단위 테스트는 예외임. 파서가 만든 태그 자리를 도메인 모델에 넘겨 명세 항목을 끝까지 확인함
+- 경계 타입은 다른 경계 타입만 씀
+  - 경계 타입이 도메인 모델을 품으면 import 규칙을 지켜도 도메인 모델이 어댑터로 넘어감
+- (미구현) `presentation`은 `domain`을 import하지 않음. `application`이 유스케이스 결과를 `presentation`용 타입으로 바꿔 넘김
+  - `presentation`이 `domain` 타입을 직접 쓰면 도메인 모델의 모양이 출력 코드에 묶임. 도메인 모델을 고칠 때마다 출력 코드도 고쳐야 함
+  - 변환은 `application` 한 곳에서 함. 출력 형식이 늘어도 도메인 모델의 변경은 변환 코드에서 멈춤
+- 패키지 밖으로 나가는 타입에 `domain` 타입을 넣지 않음. 예: 라이브러리 API의 반환 타입, JSON 출력의 스키마
+  - 공개된 타입을 바꾸면 사용자 코드가 깨짐. `domain` 타입이 공개되면 판정 규칙을 고칠 때마다 major 버전 변경이 됨
 - 모든 레이어는 `lib`을 import할 수 있음. `lib`은 `src`에서 `lib` 밖의 코드를 import하지 않음
   - `lib`은 모든 레이어가 쓰는 가장 안쪽 코드임. `lib`이 레이어를 import하면 그 레이어를 거쳐 순환 의존이 생길 수 있음
   - 레이어 지식이 필요한 계산은 `lib`이 아니라 그 레이어에 둠
@@ -48,7 +55,6 @@ flowchart TD
   infrastructure --> application
   application --> domain
   infrastructure --> domain
-  presentation --> domain
   domain --> lib
   application --> lib
   infrastructure --> lib
@@ -88,6 +94,7 @@ flowchart TD
 | 종류 | 뜻 |
 |---|---|
 | `parser` | 문서를 읽어 도메인 객체를 만드는 포트와 그 구현 |
+| `boundary` | 바깥 레이어와 주고받으려고 `domain`이 정한 데이터 타입. 행동이 없음 |
 
 - 도메인 모델 파일은 종류 없이 `<대상>.ts`로 씀. 예: `spec-item.ts`의 `SpecItem`
   - `entity`, `vo` 같은 분류는 모델링 판단임. 판단이 바뀌어도 파일 이름은 바뀌지 않아야 함

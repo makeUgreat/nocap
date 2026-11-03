@@ -1,4 +1,5 @@
-import { SpecItem, type SpecInvalidTag, type SpecTagSite } from './spec-item.js'
+import { SpecItem, type SpecInvalidTag } from './spec-item.js'
+import type { SpecTagSite } from './spec-tag-site.boundary.js'
 
 export class SpecDocument {
   private constructor(
