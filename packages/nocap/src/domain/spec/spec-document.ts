@@ -1,5 +1,4 @@
-import type { TagSite } from '../shared/tag-site.js'
-import { SpecItem, type SpecInvalidTag } from './spec-item.js'
+import { SpecItem, type SpecInvalidTag, type SpecTagSite } from './spec-item.js'
 
 export class SpecDocument {
   private constructor(
@@ -7,7 +6,7 @@ export class SpecDocument {
     readonly invalidTags: readonly SpecInvalidTag[],
   ) {}
 
-  static of(path: string, sites: readonly TagSite<string>[]): SpecDocument {
+  static of(path: string, sites: readonly SpecTagSite[]): SpecDocument {
     const specItems: SpecItem[] = []
     const invalidTags: SpecInvalidTag[] = []
     for (const site of sites) {

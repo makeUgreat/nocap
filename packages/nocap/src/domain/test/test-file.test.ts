@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { TestFile } from './test-file.js'
 import type { TagSite } from '../shared/tag-site.js'
-import type { TestName } from './test-name.js'
 
-const call = (line: number, body: string): TagSite<TestName> => ({
+const call = (line: number, body: string): TagSite => ({
   line,
-  subject: { kind: 'static', value: 't' },
   comment: { line: line - 1, body },
 })
 const idsOf = (testFile: TestFile) => testFile.items.map((item) => item.ids.values.map((id) => id.value))

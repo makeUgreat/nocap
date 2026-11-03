@@ -3,7 +3,6 @@ import { Location } from '../shared/location.js'
 import type { TagSite } from '../shared/tag-site.js'
 import { SpecIds } from '../spec/spec-ids.js'
 import { type InvalidTagReason, Tag } from '../spec/tag.js'
-import type { TestName } from './test-name.js'
 
 /** A test tag that broke a rule, at the line of the tag. */
 export type TestInvalidTag = InvalidTagReason & { readonly location: Location }
@@ -15,10 +14,9 @@ export class TestItem {
   private constructor(
     readonly ids: SpecIds,
     readonly location: Location,
-    readonly name: TestName,
   ) {}
 
-  static parse(path: string, site: TagSite<TestName>): NotTag | TestInvalidTag | ValidTestItem {
+  static parse(path: string, site: TagSite): NotTag | TestInvalidTag | ValidTestItem {
     const result = Tag.parse(site.comment.body)
 
     switch (result.kind) {
@@ -32,11 +30,11 @@ export class TestItem {
     }
   }
 
-  private static fromTag(tag: Tag, path: string, { line, subject }: TagSite<TestName>): ValidTestItem {
-    return { kind: 'valid', item: new TestItem(SpecIds.of(tag.ids), Location.of(path, line), subject) }
+  private static fromTag(tag: Tag, path: string, { line }: TagSite): ValidTestItem {
+    return { kind: 'valid', item: new TestItem(SpecIds.of(tag.ids), Location.of(path, line)) }
   }
 }
 
-function invalid(reason: InvalidTagReason, path: string, comment: TagSite<TestName>['comment']): TestInvalidTag {
+function invalid(reason: InvalidTagReason, path: string, comment: TagSite['comment']): TestInvalidTag {
   return { ...reason, location: Location.of(path, comment.line) }
 }

@@ -1,7 +1,7 @@
 import type { Html, ListItem, Nodes, Paragraph, Root } from 'mdast'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import type { SpecDocumentParser } from '../../application/spec/spec-document.parser.js'
-import type { TagSite } from '../../domain/shared/tag-site.js'
+import type { SpecTagSite } from '../../domain/spec/spec-item.js'
 
 const COMMENT_OPEN = '<!--'
 const COMMENT_CLOSE = '-->'
@@ -9,7 +9,7 @@ const COMMENT_CLOSE = '-->'
 type CommentedListItem = { readonly item: ListItem; readonly paragraph: Paragraph; readonly comment: Html }
 
 export class SpecDocumentMarkdownParser implements SpecDocumentParser {
-  parse(content: string): TagSite<string>[] {
+  parse(content: string): SpecTagSite[] {
     return listItemsInDocumentOrder(fromMarkdown(content))
       .flatMap((item) => commentedListItemOf(item) ?? [])
       .map((commented) => tagSiteOf(commented, content))
@@ -45,10 +45,10 @@ function trailingCommentOf(paragraph: Paragraph): Html | undefined {
   return isComment ? last : undefined
 }
 
-function tagSiteOf({ item, paragraph, comment }: CommentedListItem, content: string): TagSite<string> {
+function tagSiteOf({ item, paragraph, comment }: CommentedListItem, content: string): SpecTagSite {
   return {
     line: startOf(item).line,
-    subject: sentenceOf(paragraph, comment, content),
+    text: sentenceOf(paragraph, comment, content),
     comment: { line: startOf(comment).line, body: commentBodyOf(comment) },
   }
 }

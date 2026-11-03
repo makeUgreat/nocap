@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { SpecItem } from './spec-item.js'
-import type { TagSite } from '../shared/tag-site.js'
+import { SpecItem, type SpecTagSite } from './spec-item.js'
 
-const listItem = (line: number, body: string, tagLine = line): TagSite<string> => ({
+const listItem = (line: number, body: string, tagLine = line): SpecTagSite => ({
   line,
-  subject: '잠금',
+  text: '잠금',
   comment: { line: tagLine, body },
 })
 
