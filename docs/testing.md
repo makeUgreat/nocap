@@ -84,5 +84,11 @@ describe('빈 문서', () => {
 - 단위 테스트 파일은 대상 파일 옆에 `<대상>.test.ts`로 둠. 예: `src/infrastructure/markdown/spec-document.markdown.parser.test.ts`
 - 통합 테스트 파일은 `test/` 아래에 `<대상>.integration-test.ts`로 둠. 예: `test/dependency-cruiser/config.integration-test.ts`
   - 통합 테스트는 어댑터를 실제로 초기화하는 준비 코드가 늘어남. 이 코드를 `src/` 밖에 모음
+- 통합 테스트의 디렉토리는 대상 파일의 경로에서 `src/`를 뺀 경로임
+  - 예: `src/infrastructure/markdown/spec-document.markdown.parser.ts`의 통합 테스트는 `test/infrastructure/markdown/`에 둠. `dependency-cruiser/config.ts`의 통합 테스트는 `test/dependency-cruiser/`에 둠
+  - 레이어와 어댑터의 경계는 `src/`가 이미 정함. `test/`가 같은 경로를 따르면 별도 분류 없이 대상 하나로 단위 테스트와 통합 테스트의 위치를 모두 앎
 - 통합 테스트에서 어댑터나 도구를 준비하고 실행하는 코드는 같은 디렉토리의 `<대상>.support.ts`에 둠. 예: `test/dependency-cruiser/config.support.ts`
   - 테스트 파일에는 입력과 기대 결과만 남음
+- 통합 테스트가 읽는 입력 파일은 테스트 파일 옆의 `fixtures/`에 둠. 성공, 실패, 엣지 케이스마다 파일 하나로 나눔. 예: `test/infrastructure/markdown/fixtures/success.md`, `failure.md`, `edge.md`
+  - 통합 테스트는 실제 파일 형태에서 여러 입력이 함께 동작하는지 확인함. 규칙 하나씩은 단위 테스트가 확인함
+  - 결과가 같은 쪽끼리 묶으면 실패한 fixture 이름으로 어느 쪽이 깨졌는지 앎

@@ -1,66 +1,75 @@
-import type { SyntaxNode } from '@lezer/common'
-import { parser } from '@lezer/markdown'
-import type { SpecDocumentParser } from '../../application/spec-document.parser.js'
-import type { SpecItem } from '../../domain/spec-item.js'
+import type { Html, ListItem, Nodes, Paragraph, Root } from 'mdast'
+import { fromMarkdown } from 'mdast-util-from-markdown'
+import type { SpecDocumentParser } from '../../application/spec/spec-document.parser.js'
+import type { TagSite } from '../../domain/shared/tag-site.js'
 
-const SPEC_TAG = /^<!--\s*@(\S+)\s*-->$/
-const NOT_OWN_BLOCKS = new Set(['ListMark', 'BulletList', 'OrderedList'])
-type SpecTagMatch = { readonly kind: 'spec-tag'; readonly id: string } | { readonly kind: 'not-spec-tag' }
+const COMMENT_OPEN = '<!--'
+const COMMENT_CLOSE = '-->'
+
+type CommentedListItem = { readonly item: ListItem; readonly paragraph: Paragraph; readonly comment: Html }
 
 export class SpecDocumentMarkdownParser implements SpecDocumentParser {
-  parse(content: string): SpecItem[] {
-    return this.listItemsInDocumentOrder(parser.parse(content).topNode)
-      .map((item) => this.specTagAt(item, content))
-      .filter((tag) => tag.kind === 'spec-tag')
-      .map((tag) => ({ id: tag.id }))
-  }
-
-  private listItemsInDocumentOrder(node: SyntaxNode): SyntaxNode[] {
-    const nested = childrenOf(node).flatMap((child) => this.listItemsInDocumentOrder(child))
-    return node.name === 'ListItem' ? [node, ...nested] : nested
-  }
-
-  private specTagAt(item: SyntaxNode, content: string): SpecTagMatch {
-    const blocks = this.ownBlocksOf(item)
-    const [firstBlock] = blocks
-    if (firstBlock === undefined) return { kind: 'not-spec-tag' }
-    if (this.isTagOnlyItem(blocks, content)) return this.specTagIn(textOf(firstBlock, content).trim())
-    if (firstBlock.name === 'Paragraph') return this.trailingSpecTagOf(firstBlock, content)
-    return { kind: 'not-spec-tag' }
-  }
-
-  private ownBlocksOf(item: SyntaxNode): SyntaxNode[] {
-    return childrenOf(item).filter((child) => !NOT_OWN_BLOCKS.has(child.name))
-  }
-
-  private isTagOnlyItem(blocks: SyntaxNode[], content: string): boolean {
-    const [onlyBlock] = blocks
-    return blocks.length === 1 && onlyBlock?.name === 'CommentBlock' && isSingleComment(textOf(onlyBlock, content).trim())
-  }
-
-  private trailingSpecTagOf(paragraph: SyntaxNode, content: string): SpecTagMatch {
-    const last = paragraph.lastChild
-    if (last?.name !== 'Comment') return { kind: 'not-spec-tag' }
-    const isAtEnd = content.slice(last.to, paragraph.to).trim() === ''
-    return isAtEnd ? this.specTagIn(textOf(last, content)) : { kind: 'not-spec-tag' }
-  }
-
-  private specTagIn(comment: string): SpecTagMatch {
-    const id = SPEC_TAG.exec(comment)?.[1]
-    return id === undefined ? { kind: 'not-spec-tag' } : { kind: 'spec-tag', id }
+  parse(content: string): TagSite<string>[] {
+    return listItemsInDocumentOrder(fromMarkdown(content))
+      .flatMap((item) => commentedListItemOf(item) ?? [])
+      .map((commented) => tagSiteOf(commented, content))
   }
 }
 
-function childrenOf(node: SyntaxNode): SyntaxNode[] {
-  const children: SyntaxNode[] = []
-  for (let child = node.firstChild; child !== null; child = child.nextSibling) children.push(child)
-  return children
+function listItemsInDocumentOrder(document: Root): ListItem[] {
+  return descendantsOf(document).filter((node): node is ListItem => node.type === 'listItem')
 }
 
-function textOf(node: SyntaxNode, content: string): string {
-  return content.slice(node.from, node.to)
+// A parent comes before its children, which is the order the nodes appear in the document.
+function descendantsOf(node: Nodes): Nodes[] {
+  const children = 'children' in node ? node.children : []
+  return children.flatMap((child) => [child, ...descendantsOf(child)])
 }
 
-function isSingleComment(text: string): boolean {
-  return text.startsWith('<!--') && text.indexOf('-->') === text.length - '-->'.length
+function commentedListItemOf(item: ListItem): CommentedListItem | undefined {
+  const paragraph = firstParagraphOf(item)
+  if (paragraph === undefined) return undefined
+  const comment = trailingCommentOf(paragraph)
+  if (comment === undefined) return undefined
+  return { item, paragraph, comment }
+}
+
+function firstParagraphOf(item: ListItem): Paragraph | undefined {
+  const first = item.children.find((child) => child.type !== 'list')
+  return first?.type === 'paragraph' ? first : undefined
+}
+
+function trailingCommentOf(paragraph: Paragraph): Html | undefined {
+  const last = paragraph.children.at(-1)
+  const isComment = last?.type === 'html' && last.value.startsWith(COMMENT_OPEN) && last.value.endsWith(COMMENT_CLOSE)
+  return isComment ? last : undefined
+}
+
+function tagSiteOf({ item, paragraph, comment }: CommentedListItem, content: string): TagSite<string> {
+  return {
+    line: startOf(item).line,
+    subject: sentenceOf(paragraph, comment, content),
+    comment: { line: startOf(comment).line, body: commentBodyOf(comment) },
+  }
+}
+
+function sentenceOf(paragraph: Paragraph, comment: Html, content: string): string {
+  return content
+    .slice(startOf(paragraph).offset, startOf(comment).offset)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '')
+    .join(' ')
+}
+
+function commentBodyOf(comment: Html): string {
+  return comment.value.slice(COMMENT_OPEN.length, -COMMENT_CLOSE.length)
+}
+
+function startOf(node: Nodes): { line: number; offset: number } {
+  const start = node.position?.start
+  if (start?.offset === undefined) {
+    throw new Error(`Parsed markdown node has no position: ${node.type}`)
+  }
+  return { line: start.line, offset: start.offset }
 }
