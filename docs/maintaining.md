@@ -1,5 +1,5 @@
 ---
-title: 기여 절차
+title: 관리 절차
 applies_to:
   - 브랜치, PR, 병합
 read_when:
@@ -9,7 +9,7 @@ related:
   - testing.md
 ---
 
-# 기여 절차
+# 관리 절차
 
 ## 브랜치
 - 모든 변경은 PR로 `master`에 병합함. `master`에 직접 커밋하지 않음

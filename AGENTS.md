@@ -7,5 +7,5 @@
 - [용어집](docs/glossary.md): 도메인 용어를 문서나 코드 이름에 쓰기 전에 읽음
 - [nocap 문법](docs/syntax.md): 명세 문서에 태그를 붙이거나 명세 파서를 고치기 전에 읽음
 - [테스트 작성 규칙](docs/testing.md): 테스트를 작성하거나 고치기 전에 읽음
-- [기여 절차](docs/contributing.md): 브랜치를 만들거나 PR을 열기 전에 읽음
+- [관리 절차](docs/maintaining.md): 브랜치를 만들거나 PR을 열기 전에 읽음
 - [명세](docs/specs/README.md): nocap의 동작을 추가하거나 바꾸기 전에 읽음
