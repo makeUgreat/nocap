@@ -4,6 +4,7 @@ import type { TagSite } from '../shared/tag-site.boundary.js'
 import type { SpecId } from './spec-id.js'
 import type { SpecTagSite } from './spec-tag-site.boundary.js'
 import { type InvalidTagReason, Tag } from './tag.js'
+import { hasTwoOrMore } from '../../lib/array-length.js'
 
 /** A spec tag has two or more ids. Only spec tags have this reason. */
 type MultipleIds = { readonly kind: 'multiple-ids'; readonly ids: readonly [SpecId, SpecId, ...SpecId[]] }
@@ -39,11 +40,10 @@ export class SpecItem {
   }
 
   private static fromTag(tag: Tag, path: string, { line, text, comment }: SpecTagSite): SpecInvalidTag | ValidSpecItem {
-    const [id, second, ...others] = tag.ids
-    if (second) {
-      return invalid({ kind: 'multiple-ids', ids: [id, second, ...others] }, path, comment)
+    if (hasTwoOrMore(tag.ids)) {
+      return invalid({ kind: 'multiple-ids', ids: tag.ids }, path, comment)
     }
-    return { kind: 'valid', item: new SpecItem(id, Location.of(path, line), text) }
+    return { kind: 'valid', item: new SpecItem(tag.ids[0], Location.of(path, line), text) }
   }
 }
 
