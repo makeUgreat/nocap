@@ -18,7 +18,7 @@ describe('읽지 못한 파일을 경로와 함께 보고', () => {
     expect((await new FileFsReader(dir).read('missing.md')).kind).toBe('read-error')
   })
 
-  it.skipIf(process.getuid?.() === 0)('읽기 권한이 없는 파일이면 읽기 실패를 돌려준다', async () => {
+  it.skipIf(process.platform === 'win32' || process.getuid?.() === 0)('읽기 권한이 없는 파일이면 읽기 실패를 돌려준다', async () => {
     const dir = projectWith({ 'a.md': 'x' })
     makeUnreadable(dir, 'a.md')
 
