@@ -34,4 +34,5 @@ related:
 | [test-parsing.md](test-parsing.md) | `TP` | nocap이 테스트 파일에서 테스트 항목을 찾는 동작 |
 | [coverage.md](coverage.md) | `CV` | nocap이 명세 항목과 테스트 항목을 연결해 커버 여부를 정하는 동작 |
 | [coverage-check.md](coverage-check.md) | `CC` | nocap이 파일을 찾아 읽고 판정 결과를 모으는 동작 |
+| [cli.md](cli.md) | `CLI` | nocap 명령의 옵션, 출력, 종료 코드 |
 
