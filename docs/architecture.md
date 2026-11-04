@@ -7,6 +7,7 @@ read_when:
   - 모듈 사이에 import를 추가할 때
 related:
   - writing-guide.md
+  - code-style.md
 ---
 
 # 아키텍처
@@ -107,10 +108,6 @@ flowchart TD
 - `src/index.ts`와 `src/bin.ts`는 이 규칙의 예외임
   - 두 파일은 레이어에 속하지 않는 진입점임. [레이어](#레이어) 참조
 - `src/lib`의 파일은 종류 없이 `<대상>.ts`로 씀. 예: `array-length.ts`의 `isNonEmpty`
-
-## 주석
-- 패키지 밖으로 나가는 타입의 주석은 영어 TSDoc으로 씀
-  - 주석은 빌드된 `.d.ts`에 남아 사용자 IDE의 hover에 보임. 한글이면 한글을 읽지 못하는 사용자에게 계약이 전달되지 않음
 
 ## 제약
 - nocap은 ESM 전용으로 배포함
