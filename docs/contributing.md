@@ -37,9 +37,17 @@ related:
   - CI가 PR 제목의 형식과 종류를 검사함. 허용하는 종류는 `.github/workflows/pr-title.yml`에 있음
 - 사용자가 쓰던 동작이 깨지는 변경은 종류 뒤에 `!`를 붙임. 예: `feat!: rename --spec to --specs`
   - CI는 변경이 동작을 깨는지 판단하지 못함. `!`는 PR 작성자만 붙일 수 있음
-- (미구현) 릴리스 도구는 `master` 커밋 제목의 종류와 `!`로 다음 버전을 정함
-  - 종류나 `!`가 틀리면 버전도 틀림. 예: `!`를 빠뜨린 breaking change는 patch 버전으로 배포됨
+- [릴리스](#릴리스) 도구는 `master` 커밋 제목의 종류와 `!`로 다음 버전을 정함
+  - 종류나 `!`가 틀리면 버전도 틀림. 예: `fix`로 쓴 breaking change에 `!`를 빠뜨리면 patch 버전으로 배포됨
 
 ## PR 설명
 - PR 설명에는 변경 요약, 관련 명세 ID, 결정과 그 이유를 씀
   - PR 설명은 "왜 이렇게 했는가"를 찾을 때 가장 자세한 기록임
+
+## 릴리스
+- 릴리스는 release-please가 여는 Release PR을 병합해서 냄
+  - release-please는 `master` 커밋 제목으로 다음 버전과 `CHANGELOG.md`를 정함. 사람은 Release PR을 병합하는 시점만 고름
+- npm 배포는 CI만 함. 로컬에서 `npm publish`를 실행하지 않음
+  - npm에 올린 버전은 되돌릴 수 없음. 같은 버전 번호로 다시 올릴 수도 없음
+  - 로컬 `dist`에는 지워진 소스의 빌드 결과가 남을 수 있음. CI는 빈 checkout에서 빌드함
+  - CI는 npm trusted publishing으로 배포함. npm 토큰을 저장하지 않음
