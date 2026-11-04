@@ -16,7 +16,7 @@ related:
   - nocap의 변경은 대부분 바깥쪽에서 일어남. 예: 테스트 언어 추가, 실행 결과 입력, 출력 형식 추가, 명령 추가
   - 커버리지 판정 규칙은 거의 바뀌지 않음
   - 바뀌는 부분과 바뀌지 않는 부분을 나누면 입력 형식을 추가해도 판정 규칙을 고치지 않음
-- (미구현) `domain`은 커버리지 판정 규칙을 가짐
+- `domain`은 커버리지 판정 규칙을 가짐
 - `application`은 포트 interface를 정의함
 - (미구현) `application`은 유스케이스 흐름을 조립함
 - `infrastructure`는 포트를 구현함
@@ -99,7 +99,7 @@ flowchart TD
 - 도메인 모델 파일은 종류 없이 `<대상>.ts`로 씀. 예: `spec-item.ts`의 `SpecItem`
   - `entity`, `vo` 같은 분류는 모델링 판단임. 판단이 바뀌어도 파일 이름은 바뀌지 않아야 함
 - `src/index.ts`는 이 규칙의 예외임
-- `src/lib`의 파일은 종류 없이 `<대상>.ts`로 씀. 예: `non-empty.ts`의 `isNonEmpty`
+- `src/lib`의 파일은 종류 없이 `<대상>.ts`로 씀. 예: `array-length.ts`의 `isNonEmpty`
 
 ## 주석
 - 패키지 밖으로 나가는 타입의 주석은 영어 TSDoc으로 씀

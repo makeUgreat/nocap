@@ -1,4 +1,4 @@
-import { isNonEmpty } from '../../lib/non-empty.js'
+import { isNonEmpty } from '../../lib/array-length.js'
 
 const PREFIX = 'nocap:'
 
