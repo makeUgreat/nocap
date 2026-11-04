@@ -38,9 +38,7 @@ export class TestFileTypescriptParser implements TestFileParser {
     const calls = this.allCalls(program)
     const testCalls = calls.filter((call) => this.isTestCall(call))
     const outermostTestCalls = this.withoutInnerCallsOfChains(testCalls)
-    return outermostTestCalls
-      .sort((a, b) => a.start - b.start)
-      .map((call) => ({ line: lineNumberAt(content, call.start) }))
+    return outermostTestCalls.sort((a, b) => a.start - b.start).map((call) => ({ line: lineNumberAt(content, call.start) }))
   }
 
   private allCalls(program: Program): CallExpression[] {

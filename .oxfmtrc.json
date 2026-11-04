@@ -1,0 +1,8 @@
+{
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 140,
+  "semi": false,
+  "sortPackageJson": false,
+  "ignorePatterns": ["**/*.md", "pnpm-lock.yaml"]
+}

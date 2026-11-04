@@ -21,24 +21,38 @@ related:
 - (미구현) `application`은 유스케이스 흐름을 조립함
 - `infrastructure`는 포트를 구현함
 - (미구현) `presentation`은 CLI와 출력 포매터를 가짐
-- 라이브러리 진입점은 `presentation`에 속함
+- 라이브러리 진입점 `src/index.ts`는 레이어에 속하지 않음
+  - 진입점은 실제 어댑터를 만들어 유스케이스에 넣는 조립만 함. 그래서 모든 레이어를 import함
+- `src/lib`은 레이어에 속하지 않음. 도메인 개념이 아닌 일반 계산을 둠. 예: 비어 있지 않은 배열로 좁히는 `isNonEmpty`
+  - 여러 레이어가 같은 일반 계산을 쓰면 `lib`에 하나만 둠. 파일마다 복사하면 한 곳만 고쳐져 동작이 갈라짐
+  - 도메인 개념이 아닌 코드를 `domain`에 두면 `domain`이 판정 규칙만 가진다는 경계가 흐려짐
 
 ## 의존성 규칙
 - 바깥 레이어는 안쪽 레이어를 import할 수 있음. 안쪽 레이어는 바깥 레이어를 import하지 않음
+- `presentation`과 `infrastructure`는 같은 거리의 바깥 레이어임. 두 레이어는 서로 import하지 않음
+  - driving adapter와 driven adapter는 서로 몰라야 함. 둘을 연결하는 일은 진입점만 함
+  - `presentation`이 어댑터를 직접 만들면 command 테스트에 가짜 포트를 넣을 수 없음
+  - 진입점이 2개 이상이 되어도 각 진입점이 같은 방식으로 조립함. `presentation` 안에 조립 코드가 흩어지지 않음
 - 바깥 레이어는 중간 레이어를 건너뛰고 더 안쪽 레이어를 import할 수 있음
   - 포트와 포매터는 `domain` 타입을 직접 씀
   - 건너뛰기를 막으면 `domain` 타입과 같은 모양의 전달용 타입과 변환 코드가 필요함
+- 모든 레이어는 `lib`을 import할 수 있음. `lib`은 `src`에서 `lib` 밖의 코드를 import하지 않음
+  - `lib`은 모든 레이어가 쓰는 가장 안쪽 코드임. `lib`이 레이어를 import하면 그 레이어를 거쳐 순환 의존이 생길 수 있음
+  - 레이어 지식이 필요한 계산은 `lib`이 아니라 그 레이어에 둠
 - dependency-cruiser가 이 규칙을 검사함. 설정은 `packages/nocap/dependency-cruiser/config.ts`에 있음
   - type-only import도 의존으로 셈. 레이어 사이 import는 대부분 type-only임
 
 ```mermaid
 flowchart TD
-  presentation --> infrastructure
   presentation --> application
   infrastructure --> application
   application --> domain
   infrastructure --> domain
   presentation --> domain
+  domain --> lib
+  application --> lib
+  infrastructure --> lib
+  presentation --> lib
 ```
 
 ## 디렉토리 규칙
@@ -52,6 +66,17 @@ flowchart TD
 - 여러 driving adapter가 함께 쓰는 코드는 특정 driving adapter의 디렉토리 밖에 둠
   - 예: 출력 포매터는 CLI와 라이브러리 API가 함께 씀. CLI 디렉토리 안에 두면 라이브러리 API가 CLI에 의존하게 됨
 - 디렉토리는 그 안에 들어갈 코드를 만들 때 만듦
+
+## 맥락 디렉토리
+- `domain`과 `application`은 하위 디렉토리를 도메인 맥락으로 나눔. 맥락 이름은 [용어집](glossary.md)의 섹션 이름과 같음. 예: `spec`, `test`, `coverage`, `shared`
+  - 한 맥락을 고칠 때 그 디렉토리만 보면 됨
+  - 객체 종류(`entity`, `vo`)나 역할(`ports`, `usecases`)로 나누지 않음. 객체 종류는 모델링 판단이라서 바뀜. 역할은 파일 이름의 종류가 이미 말함
+- (미구현) `application`에는 도메인에 없는 맥락 `file`이 있음. 이 맥락에는 파일 시스템 입출력 포트를 둠
+- 맥락 사이의 import는 한 방향으로만 함. dependency-cruiser가 검사함
+  - `domain`에서는 `coverage`가 `test`를, `test`가 `spec`을, 모두가 `shared`를 import할 수 있음. 명세 항목은 테스트 없이도 존재하고, 테스트 태그는 명세 ID를 가리키고, 판정은 둘을 모두 씀
+  - `application`에서는 `coverage`만 다른 맥락을 import할 수 있음. 유스케이스가 포트를 조립하기 때문임
+- `infrastructure`의 어댑터 디렉토리는 서로 import하지 않음
+  - 어댑터 하나를 지우거나 바꿔도 다른 어댑터가 깨지지 않아야 함
 
 ## 파일 이름
 - `src/`의 파일 이름은 `<대상>[.<기술>].<종류>.ts`로 씀. 클래스 이름도 같은 순서로 붙임
@@ -67,6 +92,7 @@ flowchart TD
 - 도메인 모델 파일은 종류 없이 `<대상>.ts`로 씀. 예: `spec-item.ts`의 `SpecItem`
   - `entity`, `vo` 같은 분류는 모델링 판단임. 판단이 바뀌어도 파일 이름은 바뀌지 않아야 함
 - `src/index.ts`는 이 규칙의 예외임
+- `src/lib`의 파일은 종류 없이 `<대상>.ts`로 씀. 예: `non-empty.ts`의 `isNonEmpty`
 
 ## 보조 함수
 - 클래스가 맡은 일을 해내는 과정의 일부인 함수는 `private` 메서드로 둠

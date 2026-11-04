@@ -1,14 +1,76 @@
 import { describe, expect, it } from 'vitest'
 import { findViolations, importing } from './config.support.js'
 
-// 안쪽 레이어부터 바깥 레이어 순서. docs/architecture.md#의존성-규칙
-const layers = ['domain', 'application', 'infrastructure', 'presentation']
+// 레이어마다 import할 수 있는 레이어. docs/architecture.md#의존성-규칙
+const allowedLayerImports: Record<string, readonly string[]> = {
+  domain: [],
+  application: ['domain'],
+  infrastructure: ['application', 'domain'],
+  presentation: ['application', 'domain'],
+}
+const layers = Object.keys(allowedLayerImports)
 
-describe.each(layers)('%s', (from) => {
+describe.each(Object.entries(allowedLayerImports))('%s', (from, allowed) => {
   it.each(layers.filter((to) => to !== from))('→ %s', async (to) => {
     const violations = await findViolations(importing(`src/${from}/a.ts`, `src/${to}/b.ts`))
 
-    expect(violations.length > 0).toBe(layers.indexOf(to) > layers.indexOf(from))
+    expect(violations.length > 0).toBe(!allowed.includes(to))
+  })
+})
+
+// lib은 모든 레이어가 import할 수 있고, lib은 src의 다른 코드를 import하지 않음. docs/architecture.md#의존성-규칙
+describe('lib', () => {
+  it.each(layers)('%s 레이어가 lib을 import하면 위반이 아니다', async (from) => {
+    const violations = await findViolations(importing(`src/${from}/a.ts`, 'src/lib/b.ts'))
+
+    expect(violations).toEqual([])
+  })
+
+  it.each([...layers.map((layer) => `${layer}/b.ts`), 'bin.ts', 'index.ts'])('lib이 src/%s를 import하면 위반이다', async (to) => {
+    const violations = await findViolations(importing('src/lib/a.ts', `src/${to}`))
+
+    expect(violations.map((violation) => violation.rule)).toEqual(['lib-not-to-src'])
+  })
+
+  it('lib 안의 import는 위반이 아니다', async () => {
+    const violations = await findViolations(importing('src/lib/a.ts', 'src/lib/b.ts'))
+
+    expect(violations).toEqual([])
+  })
+})
+
+// 아래 맥락은 위 맥락을 import할 수 있음. docs/architecture.md#맥락-디렉토리
+const domainContexts = ['shared', 'spec', 'test', 'coverage']
+
+describe.each(domainContexts)('domain/%s', (from) => {
+  it.each(domainContexts.filter((to) => to !== from))('→ domain/%s', async (to) => {
+    const violations = await findViolations(importing(`src/domain/${from}/a.ts`, `src/domain/${to}/b.ts`))
+
+    expect(violations.length > 0).toBe(domainContexts.indexOf(to) > domainContexts.indexOf(from))
+  })
+})
+
+const applicationContexts = ['spec', 'test', 'file', 'coverage']
+
+describe.each(applicationContexts)('application/%s', (from) => {
+  it.each(applicationContexts.filter((to) => to !== from))('→ application/%s', async (to) => {
+    const violations = await findViolations(importing(`src/application/${from}/a.ts`, `src/application/${to}/b.ts`))
+
+    expect(violations.length > 0).toBe(from !== 'coverage')
+  })
+})
+
+describe('infrastructure 어댑터', () => {
+  it('다른 어댑터 디렉토리를 import하면 위반이다', async () => {
+    const violations = await findViolations(importing('src/infrastructure/markdown/a.ts', 'src/infrastructure/typescript/b.ts'))
+
+    expect(violations.map((violation) => violation.rule)).toEqual(['infrastructure-adapters-not-to-each-other'])
+  })
+
+  it('같은 어댑터 디렉토리 안의 import는 위반이 아니다', async () => {
+    const violations = await findViolations(importing('src/infrastructure/markdown/a.ts', 'src/infrastructure/markdown/b.ts'))
+
+    expect(violations).toEqual([])
   })
 })
 

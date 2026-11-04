@@ -47,9 +47,7 @@ describe('테스트 태그가 없는 테스트 호출은 테스트 항목이 아
 // @TP-004
 describe('it, test, describe, suite 호출만 테스트 호출로 인식', () => {
   it('it, test, describe, suite 위의 테스트 태그는 모두 테스트 항목이 된다', () => {
-    const content = ['it', 'test', 'describe', 'suite']
-      .flatMap((name, i) => [`// @A-00${i}`, `${name}('x', () => {})`])
-      .join('\n')
+    const content = ['it', 'test', 'describe', 'suite'].flatMap((name, i) => [`// @A-00${i}`, `${name}('x', () => {})`]).join('\n')
 
     expect(idsOf(content)).toEqual([['A-000'], ['A-001'], ['A-002'], ['A-003']])
   })
