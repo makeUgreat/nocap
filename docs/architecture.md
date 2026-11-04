@@ -18,7 +18,7 @@ related:
   - 바뀌는 부분과 바뀌지 않는 부분을 나누면 입력 형식을 추가해도 판정 규칙을 고치지 않음
 - `domain`은 커버리지 판정 규칙을 가짐
 - `application`은 포트 interface를 정의함
-- (미구현) `application`은 유스케이스 흐름을 조립함
+- `application`은 유스케이스 흐름을 조립함
 - `infrastructure`는 포트를 구현함
 - (미구현) `presentation`은 CLI와 출력 포매터를 가짐
 - 라이브러리 진입점 `src/index.ts`는 레이어에 속하지 않음
@@ -77,7 +77,7 @@ flowchart TD
 - `domain`과 `application`은 하위 디렉토리를 도메인 맥락으로 나눔. 맥락 이름은 [용어집](glossary.md)의 섹션 이름과 같음. 예: `spec`, `test`, `coverage`, `shared`
   - 한 맥락을 고칠 때 그 디렉토리만 보면 됨
   - 객체 종류(`entity`, `vo`)나 역할(`ports`, `usecases`)로 나누지 않음. 객체 종류는 모델링 판단이라서 바뀜. 역할은 파일 이름의 종류가 이미 말함
-- (미구현) `application`에는 도메인에 없는 맥락 `file`이 있음. 이 맥락에는 파일 시스템 입출력 포트를 둠
+- `application`에는 도메인에 없는 맥락 `file`이 있음. 이 맥락에는 파일 시스템 입출력 포트를 둠
 - 맥락 사이의 import는 한 방향으로만 함. dependency-cruiser가 검사함
   - `domain`에서는 `coverage`가 `test`를, `test`가 `spec`을, 모두가 `shared`를 import할 수 있음. 명세 항목은 테스트 없이도 존재하고, 테스트 태그는 명세 ID를 가리키고, 판정은 둘을 모두 씀
   - `application`에서는 `coverage`만 다른 맥락을 import할 수 있음. 유스케이스가 포트를 조립하기 때문임
@@ -94,6 +94,10 @@ flowchart TD
 | 종류 | 뜻 |
 |---|---|
 | `parser` | 문서를 읽어 도메인 객체를 만드는 포트와 그 구현 |
+| `finder` | 패턴에 맞는 파일 경로를 찾는 포트와 그 구현 |
+| `reader` | 파일 내용을 읽는 포트와 그 구현 |
+| `usecase` | 포트와 도메인 객체를 조립해 사용자 요청 하나를 처리하는 `application` 클래스 |
+| `result` | 유스케이스가 돌려주는 결과와 그 결과를 이루는 타입 |
 | `boundary` | 바깥 레이어와 주고받으려고 `domain`이 정한 데이터 타입. 행동이 없음 |
 
 - 도메인 모델 파일은 종류 없이 `<대상>.ts`로 씀. 예: `spec-item.ts`의 `SpecItem`

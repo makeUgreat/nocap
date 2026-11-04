@@ -32,14 +32,6 @@ export class Coverage {
     )
   }
 
-  isComplete(): boolean {
-    return this.problems.length === 0
-  }
-
-  isFullyCovered(): boolean {
-    return this.coveredSpecCount === this.specCount
-  }
-
   private static judgeSpecGroup({ id, items }: IdGroup<SpecItem>, testGroups: IdGroups<TestItem>): SpecJudgment {
     if (hasTwoOrMore(items)) return { kind: 'duplicate-id', id, specItems: items }
     if (testGroups.has(id.key)) return { kind: 'covered' }
