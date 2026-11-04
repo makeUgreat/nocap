@@ -5,7 +5,8 @@
   "packages": {
     "packages/nocap": {
       "release-type": "node",
-      "package-name": "@makehash/nocap"
+      "package-name": "@makehash/nocap",
+      "initial-version": "0.1.0"
     }
   }
 }
