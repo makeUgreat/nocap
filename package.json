@@ -10,7 +10,8 @@
     "lint:deps": "pnpm -r lint:deps",
     "lint:package": "pnpm -r lint:package",
     "lint": "oxlint",
-    "nocap": "pnpm --filter @makehash/nocap build && node packages/nocap/dist/bin.js --spec \"docs/specs/*.md\" --test \"packages/nocap/src/**/*.test.ts\" --test \"packages/nocap/test/**/*.integration-test.ts\"",
+    "nocap": "pnpm --filter @makehash/nocap build && pnpm nocap:run",
+    "nocap:run": "node packages/nocap/dist/bin.js --spec \"docs/specs/*.md\" --test \"packages/nocap/src/**/*.test.ts\" --test \"packages/nocap/test/**/*.integration-test.ts\"",
     "format": "oxfmt",
     "format:check": "oxfmt --check"
   },
