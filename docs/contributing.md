@@ -14,7 +14,7 @@ related:
 ## 브랜치
 - 모든 변경은 PR로 `master`에 병합함. `master`에 직접 커밋하지 않음
 - 브랜치 이름은 `<종류>/<짧은-이름>`으로 씀. 예: `feat/spec-parser`
-  - 종류는 커밋 메시지 접두어와 같음. 예: `feat`, `fix`, `docs`, `chore`
+  - 종류는 [PR 제목](#pr-제목)의 종류와 같음. 예: `feat`, `fix`, `docs`, `chore`
 
 ## stacked PR
 - 기능 하나는 stacked PR 하나로 만듦. stack 안의 PR 하나는 리뷰할 수 있는 단계 하나임
@@ -29,6 +29,16 @@ related:
 ## 병합
 - PR은 squash merge로 병합함. stack은 `gh stack merge --squash`로 병합함
   - `master`에서 커밋 하나가 PR 하나가 됨. 결정의 근거를 그 커밋 메시지 하나에 모을 수 있음
+
+## PR 제목
+- PR 제목은 Conventional Commits 형식으로 씀. 예: `feat: add json output`, `fix(cli): keep the pattern quotes`
+  - squash merge는 PR 제목을 `master` 커밋의 제목으로 씀. 그래서 PR 제목이 곧 커밋 이력임
+  - 형식이 정해져 있으면 변경 종류를 커밋 이력에서 기계적으로 읽을 수 있음
+  - CI가 PR 제목의 형식과 종류를 검사함. 허용하는 종류는 `.github/workflows/pr-title.yml`에 있음
+- 사용자가 쓰던 동작이 깨지는 변경은 종류 뒤에 `!`를 붙임. 예: `feat!: rename --spec to --specs`
+  - CI는 변경이 동작을 깨는지 판단하지 못함. `!`는 PR 작성자만 붙일 수 있음
+- (미구현) 릴리스 도구는 `master` 커밋 제목의 종류와 `!`로 다음 버전을 정함
+  - 종류나 `!`가 틀리면 버전도 틀림. 예: `!`를 빠뜨린 breaking change는 patch 버전으로 배포됨
 
 ## PR 설명
 - PR 설명에는 변경 요약, 관련 명세 ID, 결정과 그 이유를 씀
