@@ -3,11 +3,12 @@ import { join } from 'node:path'
 
 const PACKAGE_DIR = join(import.meta.dirname, '..', '..')
 const BIN = join(PACKAGE_DIR, 'dist', 'bin.js')
+const TSC = join(PACKAGE_DIR, 'node_modules', 'typescript', 'bin', 'tsc')
 
 export type CliRun = { readonly stdout: string; readonly stderr: string; readonly exitCode: number | null }
 
 export function buildCli(): void {
-  execFileSync(join(PACKAGE_DIR, 'node_modules', '.bin', 'tsc'), ['-p', 'tsconfig.build.json'], { cwd: PACKAGE_DIR })
+  execFileSync(process.execPath, [TSC, '-p', 'tsconfig.build.json'], { cwd: PACKAGE_DIR })
 }
 
 export function runCli(cwd: string, args: string[], env: Record<string, string> = {}): CliRun {
