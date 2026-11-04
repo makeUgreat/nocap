@@ -12,6 +12,8 @@ export type UnsupportedExtension = {
   readonly kind: 'unsupported-extension'
   /** The extension including the leading dot, for example `.py`. Empty when `path` has no extension. */
   readonly extension: string
+  /** The extensions the parser supports, including the leading dot, for example `.ts`. */
+  readonly supportedExtensions: readonly [string, ...string[]]
 }
 
 /**

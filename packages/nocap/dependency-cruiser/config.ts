@@ -34,6 +34,13 @@ const config: IConfiguration = {
       to: { path: '^src/infrastructure/' },
     },
     {
+      name: 'presentation-not-to-domain',
+      severity: 'error',
+      comment: `presentation must not import domain. application turns the domain model into its own result types. See ${architecture}.`,
+      from: { path: '^src/presentation/' },
+      to: { path: '^src/domain/' },
+    },
+    {
       name: 'infrastructure-only-to-domain-boundary',
       severity: 'error',
       comment: `infrastructure may import only the boundary types of domain (*.boundary.ts), not the domain model. See ${architecture}.`,

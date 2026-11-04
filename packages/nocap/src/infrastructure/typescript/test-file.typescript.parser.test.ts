@@ -213,8 +213,12 @@ describe('파일 확장자로 언어 결정', () => {
 
 // nocap: TP-012
 describe('지원하지 않는 확장자는 오류', () => {
-  it('지원하지 않는 확장자이면 그 확장자를 담은 오류를 반환한다', () => {
-    expect(parser.parse('a.test.py', '// nocap: A-001\nit()')).toEqual({ kind: 'unsupported-extension', extension: '.py' })
+  it('지원하지 않는 확장자이면 그 확장자와 지원하는 확장자 목록을 담은 오류를 반환한다', () => {
+    expect(parser.parse('a.test.py', '// nocap: A-001\nit()')).toEqual({
+      kind: 'unsupported-extension',
+      extension: '.py',
+      supportedExtensions: ['.ts', '.mts', '.cts', '.tsx', '.js', '.mjs', '.cjs', '.jsx'],
+    })
   })
 })
 

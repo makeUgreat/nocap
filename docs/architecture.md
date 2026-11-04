@@ -20,9 +20,9 @@ related:
 - `application`은 포트 interface를 정의함
 - `application`은 유스케이스 흐름을 조립함
 - `infrastructure`는 포트를 구현함
-- (미구현) `presentation`은 CLI와 출력 포매터를 가짐
-- 라이브러리 진입점 `src/index.ts`는 레이어에 속하지 않음
-  - 진입점은 실제 어댑터를 만들어 유스케이스에 넣는 조립만 함. 그래서 모든 레이어를 import함
+- `presentation`은 CLI와 출력 포매터를 가짐
+- CLI 진입점 `src/bin.ts`와 라이브러리 진입점 `src/index.ts`는 레이어에 속하지 않음
+  - 두 진입점은 실제 어댑터를 만들어 유스케이스에 넣는 조립만 함. 그래서 모든 레이어를 import함
 - `src/lib`은 레이어에 속하지 않음. 도메인 개념이 아닌 일반 계산을 둠. 예: 비어 있지 않은 배열로 좁히는 `isNonEmpty`
   - 여러 레이어가 같은 일반 계산을 쓰면 `lib`에 하나만 둠. 파일마다 복사하면 한 곳만 고쳐져 동작이 갈라짐
   - 도메인 개념이 아닌 코드를 `domain`에 두면 `domain`이 판정 규칙만 가진다는 경계가 흐려짐
@@ -38,7 +38,7 @@ related:
   - 어댑터의 단위 테스트는 예외임. 파서가 만든 태그 자리를 도메인 모델에 넘겨 명세 항목을 끝까지 확인함
 - 경계 타입은 다른 경계 타입만 씀
   - 경계 타입이 도메인 모델을 품으면 import 규칙을 지켜도 도메인 모델이 어댑터로 넘어감
-- (미구현) `presentation`은 `domain`을 import하지 않음. `application`이 유스케이스 결과를 `presentation`용 타입으로 바꿔 넘김
+- `presentation`은 `domain`을 import하지 않음. `application`이 유스케이스 결과를 `presentation`용 타입으로 바꿔 넘김
   - `presentation`이 `domain` 타입을 직접 쓰면 도메인 모델의 모양이 출력 코드에 묶임. 도메인 모델을 고칠 때마다 출력 코드도 고쳐야 함
   - 변환은 `application` 한 곳에서 함. 출력 형식이 늘어도 도메인 모델의 변경은 변환 코드에서 멈춤
 - 패키지 밖으로 나가는 타입에 `domain` 타입을 넣지 않음. 예: 라이브러리 API의 반환 타입, JSON 출력의 스키마
@@ -98,11 +98,14 @@ flowchart TD
 | `reader` | 파일 내용을 읽는 포트와 그 구현 |
 | `usecase` | 포트와 도메인 객체를 조립해 사용자 요청 하나를 처리하는 `application` 클래스 |
 | `result` | 유스케이스가 돌려주는 결과와 그 결과를 이루는 타입 |
+| `command` | CLI 인자를 해석해 유스케이스를 실행하고 출력과 종료 코드를 정하는 `presentation` 클래스 |
+| `formatter` | 유스케이스 결과를 출력 문자열로 바꾸는 `presentation` 클래스 |
 | `boundary` | 바깥 레이어와 주고받으려고 `domain`이 정한 데이터 타입. 행동이 없음 |
 
 - 도메인 모델 파일은 종류 없이 `<대상>.ts`로 씀. 예: `spec-item.ts`의 `SpecItem`
   - `entity`, `vo` 같은 분류는 모델링 판단임. 판단이 바뀌어도 파일 이름은 바뀌지 않아야 함
-- `src/index.ts`는 이 규칙의 예외임
+- `src/index.ts`와 `src/bin.ts`는 이 규칙의 예외임
+  - 두 파일은 레이어에 속하지 않는 진입점임. [레이어](#레이어) 참조
 - `src/lib`의 파일은 종류 없이 `<대상>.ts`로 씀. 예: `array-length.ts`의 `isNonEmpty`
 
 ## 주석

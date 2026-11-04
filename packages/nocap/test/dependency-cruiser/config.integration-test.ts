@@ -7,7 +7,7 @@ const allowedLayerImports: Record<string, readonly string[]> = {
   domain: [],
   application: ['domain'],
   infrastructure: ['application'],
-  presentation: ['application', 'domain'],
+  presentation: ['application'],
 }
 const layers = Object.keys(allowedLayerImports)
 
