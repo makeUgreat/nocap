@@ -1,24 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import { TestItem } from './test-item.js'
 import type { TagSite } from '../shared/tag-site.js'
-import type { TestName } from './test-name.js'
 
-const call = (line: number, body: string): TagSite<TestName> => ({
+const call = (line: number, body: string): TagSite => ({
   line,
-  subject: { kind: 'static', value: 't' },
   comment: { line: line - 1, body },
 })
 
 describe('테스트 호출의 태그 자리에서 테스트 항목 만들기', () => {
-  it('태그 자리의 주석이 테스트 태그이면 테스트 호출의 줄과 테스트 이름으로 테스트 항목을 만든다', () => {
+  it('태그 자리의 주석이 테스트 태그이면 테스트 호출의 줄로 테스트 항목을 만든다', () => {
     const result = TestItem.parse('a.test.ts', call(2, ' nocap: A-001'))
 
     if (result.kind !== 'valid') throw new Error(`expected a test item, got ${result.kind}`)
-    expect([result.item.ids.values.map((id) => id.value), result.item.location, result.item.name]).toEqual([
-      ['A-001'],
-      { path: 'a.test.ts', line: 2 },
-      { kind: 'static', value: 't' },
-    ])
+    expect([result.item.ids.values.map((id) => id.value), result.item.location]).toEqual([['A-001'], { path: 'a.test.ts', line: 2 }])
   })
 
   it('태그 자리의 주석이 테스트 태그가 아니면 태그가 아니라고 돌려준다', () => {

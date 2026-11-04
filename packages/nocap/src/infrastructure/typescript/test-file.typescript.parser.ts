@@ -1,7 +1,8 @@
 import { extname } from 'node:path'
 import { type CallExpression, type Comment, type Expression, parseSync, type Program, type Super, Visitor } from 'oxc-parser'
-import type { TestFileParser, TestFileParseResult } from '../../application/test-file.parser.js'
-import type { TestItem } from '../../domain/test-item.js'
+import type { TestFileParser, TestFileParseResult } from '../../application/test/test-file.parser.js'
+import type { TagSite } from '../../domain/shared/tag-site.js'
+import { isNonEmpty } from '../../lib/non-empty.js'
 
 const SUPPORTED_LANGUAGES = new Map<string, 'ts' | 'tsx' | 'js' | 'jsx'>([
   ['.ts', 'ts'],
@@ -14,73 +15,68 @@ const SUPPORTED_LANGUAGES = new Map<string, 'ts' | 'tsx' | 'js' | 'jsx'>([
   ['.jsx', 'jsx'],
 ])
 const TEST_FUNCTIONS = new Set(['it', 'test', 'describe', 'suite'])
-const TAGGED_ID = /^@(\S+)$/
 
-type TestCall = { readonly line: number }
-type TestTag = { readonly line: number; readonly ids: string[] }
-type TestTagMatch = ({ readonly kind: 'test-tag' } & TestTag) | { readonly kind: 'not-test-tag' }
+type CommentedTestCall = { readonly call: CallExpression; readonly comment: Comment }
+/** `starts` holds the offset where each line begins. Index 0 is line 1. */
+type SourceLines = { readonly content: string; readonly starts: readonly number[] }
 
 export class TestFileTypescriptParser implements TestFileParser {
-  parse(fileName: string, content: string): TestFileParseResult {
-    const language = SUPPORTED_LANGUAGES.get(extname(fileName))
-    if (language === undefined) return { kind: 'unsupported-extension', extension: extname(fileName) }
+  parse(path: string, content: string): TestFileParseResult {
+    const extension = extname(path)
+    const language = SUPPORTED_LANGUAGES.get(extension)
+    if (language === undefined) {
+      return { kind: 'unsupported-extension', extension }
+    }
 
-    const parsed = parseSync(fileName, content, { lang: language })
-    if (parsed.errors.length > 0) return { kind: 'syntax-error', messages: parsed.errors.map((error) => error.message) }
+    const { program, comments, errors } = parseSync(path, content, { lang: language })
+    const messages = errors.map((error) => error.message)
+    if (isNonEmpty(messages)) {
+      return { kind: 'syntax-error', messages }
+    }
 
-    const testCalls = this.findTestCalls(parsed.program, content)
-    const testTags = this.findTestTags(parsed.comments, content)
-    const items = this.linkEachTestCallToTagOnLineAbove(testCalls, testTags)
-    return { kind: 'parsed', items }
+    const lines = sourceLinesOf(content)
+    const outermostCalls = outermostCallsByLine(program, lines)
+    const sites = ownLineCommentsOf(comments, lines)
+      .flatMap((comment) => commentedTestCallOf(comment, outermostCalls, lines) ?? [])
+      .map((commented) => tagSiteOf(commented, lines))
+    return { kind: 'parsed', sites }
   }
+}
 
-  private findTestCalls(program: Program, content: string): TestCall[] {
-    const calls = this.allCalls(program)
-    const testCalls = calls.filter((call) => this.isTestCall(call))
-    const outermostTestCalls = this.withoutInnerCallsOfChains(testCalls)
-    return outermostTestCalls.sort((a, b) => a.start - b.start).map((call) => ({ line: lineNumberAt(content, call.start) }))
-  }
+// `test.each([1])('x', fn)` has two calls that start at the same offset. The outer call ends later.
+function outermostCallsByLine(program: Program, lines: SourceLines): Map<number, CallExpression> {
+  const outermost = new Map<number, CallExpression>()
+  new Visitor({
+    CallExpression: (call: CallExpression) => {
+      const line = lineOf(call, lines)
+      const current = outermost.get(line)
+      if (current === undefined || encloses(call, current)) outermost.set(line, call)
+    },
+  }).visit(program)
+  return outermost
+}
 
-  private allCalls(program: Program): CallExpression[] {
-    const calls: CallExpression[] = []
-    new Visitor({ CallExpression: (call: CallExpression) => calls.push(call) }).visit(program)
-    return calls
-  }
+function encloses(outer: CallExpression, inner: CallExpression): boolean {
+  return outer.start < inner.start || (outer.start === inner.start && outer.end > inner.end)
+}
 
-  private isTestCall(call: CallExpression): boolean {
-    const name = rootNameOf(call.callee)
-    return name !== undefined && TEST_FUNCTIONS.has(name)
-  }
+function ownLineCommentsOf(comments: readonly Comment[], lines: SourceLines): Comment[] {
+  return comments.filter((comment) => comment.type === 'Line' && startsLine(comment, lines))
+}
 
-  private withoutInnerCallsOfChains(calls: CallExpression[]): CallExpression[] {
-    return calls.filter((call) => !calls.some((other) => other.start === call.start && other.end > call.end))
-  }
+function commentedTestCallOf(
+  comment: Comment,
+  outermostCalls: ReadonlyMap<number, CallExpression>,
+  lines: SourceLines,
+): CommentedTestCall | undefined {
+  const call = outermostCalls.get(lineOf(comment, lines) + 1)
+  if (call === undefined || !isTestCall(call)) return undefined
+  return { call, comment }
+}
 
-  private findTestTags(comments: Comment[], content: string): TestTag[] {
-    return comments
-      .filter((comment) => comment.type === 'Line')
-      .filter((comment) => this.isAloneOnItsLine(comment, content))
-      .map((comment) => this.testTagIn(comment, content))
-      .filter((match) => match.kind === 'test-tag')
-  }
-
-  private isAloneOnItsLine(comment: Comment, content: string): boolean {
-    const textBeforeOnSameLine = content.slice(0, comment.start).split('\n').at(-1) ?? ''
-    return textBeforeOnSameLine.trim() === ''
-  }
-
-  private testTagIn(comment: Comment, content: string): TestTagMatch {
-    const ids = comment.value.split(',').map((part) => TAGGED_ID.exec(part.trim())?.[1])
-    if (!ids.every((id): id is string => id !== undefined)) return { kind: 'not-test-tag' }
-    return { kind: 'test-tag', line: lineNumberAt(content, comment.start), ids }
-  }
-
-  private linkEachTestCallToTagOnLineAbove(testCalls: TestCall[], testTags: TestTag[]): TestItem[] {
-    return testCalls.flatMap((call) => {
-      const tagOnLineAbove = testTags.find((tag) => tag.line === call.line - 1)
-      return tagOnLineAbove === undefined ? [] : [{ ids: tagOnLineAbove.ids }]
-    })
-  }
+function isTestCall(call: CallExpression): boolean {
+  const root = rootNameOf(call.callee)
+  return root !== undefined && TEST_FUNCTIONS.has(root)
 }
 
 function rootNameOf(node: Expression | Super): string | undefined {
@@ -98,6 +94,34 @@ function rootNameOf(node: Expression | Super): string | undefined {
   }
 }
 
-function lineNumberAt(content: string, offset: number): number {
-  return content.slice(0, offset).split('\n').length - 1
+function tagSiteOf({ call, comment }: CommentedTestCall, lines: SourceLines): TagSite {
+  return {
+    line: lineOf(call, lines),
+    comment: { line: lineOf(comment, lines), body: comment.value },
+  }
+}
+
+function sourceLinesOf(content: string): SourceLines {
+  const starts = [0]
+  for (let newline = content.indexOf('\n'); newline !== -1; newline = content.indexOf('\n', newline + 1)) {
+    starts.push(newline + 1)
+  }
+  return { content, starts }
+}
+
+function startsLine(node: { readonly start: number }, lines: SourceLines): boolean {
+  const lineStart = lines.starts[lineOf(node, lines) - 1] ?? 0
+  return lines.content.slice(lineStart, node.start).trim() === ''
+}
+
+// Binary search for the last line that starts at or before the node.
+function lineOf(node: { readonly start: number }, lines: SourceLines): number {
+  let low = 0
+  let high = lines.starts.length - 1
+  while (low < high) {
+    const middle = Math.ceil((low + high) / 2)
+    if ((lines.starts[middle] ?? Infinity) <= node.start) low = middle
+    else high = middle - 1
+  }
+  return low + 1
 }

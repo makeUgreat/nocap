@@ -1,4 +1,4 @@
-import type { TagSite } from '../../domain/shared/tag-site.js'
+import type { SpecTagSite } from '../../domain/spec/spec-item.js'
 
 export interface SpecDocumentParser {
   /**
@@ -6,7 +6,7 @@ export interface SpecDocumentParser {
    *
    * @param content - Full text of the spec document.
    * @returns The tag sites in the order they appear in the document. Empty when the document has none.
-   * The subject of each tag site is the spec sentence: the first paragraph of the list item without the comment, on one line.
+   * The text of each tag site is the spec sentence: the first paragraph of the list item without the comment, on one line.
    */
-  parse(content: string): TagSite<string>[]
+  parse(content: string): SpecTagSite[]
 }

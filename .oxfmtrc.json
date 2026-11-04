@@ -4,5 +4,5 @@
   "printWidth": 140,
   "semi": false,
   "sortPackageJson": false,
-  "ignorePatterns": ["**/*.md", "pnpm-lock.yaml"]
+  "ignorePatterns": ["**/*.md", "pnpm-lock.yaml", "packages/*/test/**/fixtures/**"]
 }

@@ -8,13 +8,10 @@
  * An item without such a comment is not a tag site.
  * The adapter does not check the body: a comment such as `TODO` still makes a tag site.
  * Whether the body is a tag is decided by `Tag.parse`.
- *
- * @typeParam Subject - What the item is: the spec sentence of a list item, or the name of a test call.
  */
-export type TagSite<Subject> = {
+export type TagSite = {
   /** 1-based line where the item starts. */
   readonly line: number
-  readonly subject: Subject
   readonly comment: {
     /** 1-based line where the comment starts. */
     readonly line: number

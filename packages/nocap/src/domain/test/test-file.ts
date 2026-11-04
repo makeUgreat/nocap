@@ -1,6 +1,5 @@
 import type { TagSite } from '../shared/tag-site.js'
 import { TestItem, type TestInvalidTag } from './test-item.js'
-import type { TestName } from './test-name.js'
 
 export class TestFile {
   private constructor(
@@ -8,7 +7,7 @@ export class TestFile {
     readonly invalidTags: readonly TestInvalidTag[],
   ) {}
 
-  static of(path: string, sites: readonly TagSite<TestName>[]): TestFile {
+  static of(path: string, sites: readonly TagSite[]): TestFile {
     const items: TestItem[] = []
     const invalidTags: TestInvalidTag[] = []
     for (const site of sites) {
