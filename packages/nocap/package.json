@@ -1,5 +1,5 @@
 {
-  "name": "nocap",
+  "name": "@makehash/nocap",
   "version": "0.0.0",
   "description": "",
   "license": "MIT",
@@ -12,6 +12,9 @@
   },
   "bin": {
     "nocap": "./dist/bin.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "dist"
