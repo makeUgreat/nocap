@@ -26,14 +26,14 @@
   },
   "devDependencies": {
     "@swc/core": "^1.16.21",
+    "@types/mdast": "^4.0.4",
     "@types/node": "^22.20.5",
     "dependency-cruiser": "^18.7.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5"
   },
   "dependencies": {
-    "@lezer/common": "^1.5.5",
-    "@lezer/markdown": "^1.8.1",
+    "mdast-util-from-markdown": "^2.1.0",
     "oxc-parser": "^0.156.0"
   }
 }
