@@ -89,6 +89,8 @@ describe('빈 문서', () => {
   - 레이어와 어댑터의 경계는 `src/`가 이미 정함. `test/`가 같은 경로를 따르면 별도 분류 없이 대상 하나로 단위 테스트와 통합 테스트의 위치를 모두 앎
 - 통합 테스트에서 어댑터나 도구를 준비하고 실행하는 코드는 같은 디렉토리의 `<대상>.support.ts`에 둠. 예: `test/dependency-cruiser/config.support.ts`
   - 테스트 파일에는 입력과 기대 결과만 남음
+- 여러 대상의 통합 테스트가 함께 쓰는 준비 코드는 `test/support/`에 둠. 예: 임시 프로젝트 디렉토리를 만드는 `test/support/project.support.ts`
+  - 한 대상의 디렉토리에 두면 다른 대상의 테스트가 그 대상에 의존하게 됨
 - 통합 테스트가 읽는 입력 파일은 테스트 파일 옆의 `fixtures/`에 둠. 성공, 실패, 엣지 케이스마다 파일 하나로 나눔. 예: `test/infrastructure/markdown/fixtures/success.md`, `failure.md`, `edge.md`
   - 통합 테스트는 실제 파일 형태에서 여러 입력이 함께 동작하는지 확인함. 규칙 하나씩은 단위 테스트가 확인함
   - 결과가 같은 쪽끼리 묶으면 실패한 fixture 이름으로 어느 쪽이 깨졌는지 앎

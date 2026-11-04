@@ -26,6 +26,9 @@ importers:
       oxc-parser:
         specifier: ^0.156.0
         version: 0.156.0
+      tinyglobby:
+        specifier: ^0.2.17
+        version: 0.2.17
     devDependencies:
       '@swc/core':
         specifier: ^1.16.21
