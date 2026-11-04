@@ -12,6 +12,9 @@ applies_to:
   - 명세 문서는 nocap이 입력으로 읽는 데이터임. 사람이 읽는 설명 문서와 성격이 다름
 - `AGENTS.md` 같은 agent instruction 파일, 임시 작업 노트, 생성 문서는 제외함
   - agent instruction 파일은 매 작업마다 읽히는 명령 목록임. 설명 문서와 쓰는 목적이 다름
+- 패키지를 소개하는 `README.md`와 그 번역본 `README.ko.md`는 제외함
+  - README는 npm과 GitHub에서 nocap을 처음 보는 사용자가 읽음. 영어 사용자도 읽어야 해서 언어별로 둠
+  - README는 소개와 빠른 시작만 담음. 세부 규칙은 이 가이드를 따르는 문서에 두고 README에서 링크함
 
 ## 언어
 - 문서는 한글로 씀. 문서를 언어별 쌍으로 관리하지 않음
