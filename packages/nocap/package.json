@@ -1,8 +1,25 @@
 {
   "name": "@makehash/nocap",
   "version": "0.0.0",
-  "description": "",
+  "description": "Link spec docs to tests, and track which specs are not verified yet",
+  "keywords": [
+    "spec",
+    "coverage",
+    "traceability",
+    "requirements",
+    "testing",
+    "markdown",
+    "cli"
+  ],
   "license": "MIT",
+  "author": "hash_kim",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/makeUgreat/nocap.git",
+    "directory": "packages/nocap"
+  },
+  "homepage": "https://github.com/makeUgreat/nocap#readme",
+  "bugs": "https://github.com/makeUgreat/nocap/issues",
   "type": "module",
   "exports": {
     ".": {
