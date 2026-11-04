@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, expect, it, test } from 'vitest'
 import { lock, unlockAfter } from '../src/lock.js'
 
