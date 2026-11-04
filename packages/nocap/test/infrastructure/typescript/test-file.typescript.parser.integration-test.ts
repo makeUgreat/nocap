@@ -13,12 +13,12 @@ describe('실제 TypeScript 파일의 태그 자리', () => {
     expect(parseFixture('success.ts')).toEqual({
       kind: 'parsed',
       sites: [
-        { line: 5, comment: { line: 4, body: ' nocap: A-001' } },
-        { line: 7, comment: { line: 6, body: ' nocap: A-002' } },
-        { line: 12, comment: { line: 11, body: ' nocap: A-003, A-004' } },
-        { line: 17, comment: { line: 16, body: ' nocap: A-005' } },
-        { line: 26, comment: { line: 25, body: ' TODO 해제 테스트 추가' } },
-        { line: 28, comment: { line: 27, body: ' nocap: B-001' } },
+        { line: 6, comment: { line: 5, body: ' nocap: A-001' } },
+        { line: 8, comment: { line: 7, body: ' nocap: A-002' } },
+        { line: 13, comment: { line: 12, body: ' nocap: A-003, A-004' } },
+        { line: 18, comment: { line: 17, body: ' nocap: A-005' } },
+        { line: 27, comment: { line: 26, body: ' TODO 해제 테스트 추가' } },
+        { line: 29, comment: { line: 28, body: ' nocap: B-001' } },
       ],
     })
   })
@@ -31,11 +31,11 @@ describe('실제 TypeScript 파일의 태그 자리', () => {
     expect(parseFixture('edge.tsx')).toEqual({
       kind: 'parsed',
       sites: [
-        { line: 5, comment: { line: 4, body: ' nocap: E-001' } },
-        { line: 8, comment: { line: 7, body: 'nocap:E-002' } },
-        { line: 14, comment: { line: 13, body: ' nocap: E-003' } },
-        { line: 20, comment: { line: 19, body: '' } },
-        { line: 23, comment: { line: 22, body: ' nocap: E-004' } },
+        { line: 6, comment: { line: 5, body: ' nocap: E-001' } },
+        { line: 9, comment: { line: 8, body: 'nocap:E-002' } },
+        { line: 15, comment: { line: 14, body: ' nocap: E-003' } },
+        { line: 21, comment: { line: 20, body: '' } },
+        { line: 24, comment: { line: 23, body: ' nocap: E-004' } },
       ],
     })
   })
