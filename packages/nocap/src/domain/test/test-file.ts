@@ -1,5 +1,6 @@
+import type { TagSite } from '../shared/tag-site.js'
 import { TestItem, type TestInvalidTag } from './test-item.js'
-import type { TestItemCandidate } from './test-item-candidate.js'
+import type { TestName } from './test-name.js'
 
 export class TestFile {
   private constructor(
@@ -7,11 +8,11 @@ export class TestFile {
     readonly invalidTags: readonly TestInvalidTag[],
   ) {}
 
-  static of(path: string, candidates: readonly TestItemCandidate[]): TestFile {
+  static of(path: string, sites: readonly TagSite<TestName>[]): TestFile {
     const items: TestItem[] = []
     const invalidTags: TestInvalidTag[] = []
-    for (const candidate of candidates) {
-      const result = TestItem.parse(path, candidate)
+    for (const site of sites) {
+      const result = TestItem.parse(path, site)
       switch (result.kind) {
         case 'not-tag':
           break

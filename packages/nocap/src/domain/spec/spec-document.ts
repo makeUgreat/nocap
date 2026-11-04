@@ -1,5 +1,5 @@
+import type { TagSite } from '../shared/tag-site.js'
 import { SpecItem, type SpecInvalidTag } from './spec-item.js'
-import type { SpecItemCandidate } from './spec-item-candidate.js'
 
 export class SpecDocument {
   private constructor(
@@ -7,11 +7,11 @@ export class SpecDocument {
     readonly invalidTags: readonly SpecInvalidTag[],
   ) {}
 
-  static of(path: string, candidates: readonly SpecItemCandidate[]): SpecDocument {
+  static of(path: string, sites: readonly TagSite<string>[]): SpecDocument {
     const specItems: SpecItem[] = []
     const invalidTags: SpecInvalidTag[] = []
-    for (const candidate of candidates) {
-      const result = SpecItem.parse(path, candidate)
+    for (const site of sites) {
+      const result = SpecItem.parse(path, site)
       switch (result.kind) {
         case 'not-tag':
           break
