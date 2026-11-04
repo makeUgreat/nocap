@@ -7,7 +7,8 @@ import type { FileFinder } from '../file/file.finder.js'
 import type { FileReader, FileReadResult } from '../file/file.reader.js'
 import type { SpecDocumentParser } from '../spec/spec-document.parser.js'
 import type { TestFileParser } from '../test/test-file.parser.js'
-import { CoverageCheckResult, type FileError } from './coverage-check.result.js'
+import { isNonEmpty } from '../../lib/array-length.js'
+import { CoverageCheckResult, type FileError, type UnmatchedPattern, type UnmatchedPatterns } from './coverage-check.result.js'
 
 export type CoverageCheckInput = {
   /** Glob patterns of the spec documents. */
@@ -17,6 +18,7 @@ export type CoverageCheckInput = {
 }
 
 type ReadAttempt = { readonly path: string; readonly result: FileReadResult }
+type FoundFiles = { readonly paths: readonly string[]; readonly unmatchedPatterns: readonly string[] }
 type FileOutcome<T> =
   | { readonly kind: 'parsed'; readonly items: readonly T[]; readonly invalidTags: readonly (SpecInvalidTag | TestInvalidTag)[] }
   | FileError
@@ -30,8 +32,17 @@ export class CoverageCheckUsecase {
     private readonly testFileParser: TestFileParser,
   ) {}
 
-  async run(input: CoverageCheckInput): Promise<CoverageCheckResult> {
-    const [specFiles, testFiles] = await Promise.all([this.readFiles(input.specPatterns), this.readFiles(input.testPatterns)])
+  async run(input: CoverageCheckInput): Promise<CoverageCheckResult | UnmatchedPatterns> {
+    const [specPaths, testPaths] = await Promise.all([this.findFiles(input.specPatterns), this.findFiles(input.testPatterns)])
+    const unmatchedPatterns: UnmatchedPattern[] = [
+      ...specPaths.unmatchedPatterns.map((pattern) => ({ side: 'spec' as const, pattern })),
+      ...testPaths.unmatchedPatterns.map((pattern) => ({ side: 'test' as const, pattern })),
+    ]
+    if (isNonEmpty(unmatchedPatterns)) {
+      return { kind: 'unmatched-patterns', patterns: unmatchedPatterns }
+    }
+
+    const [specFiles, testFiles] = await Promise.all([this.readFiles(specPaths.paths), this.readFiles(testPaths.paths)])
     const specs = collect(specFiles, (path, content) => this.parseSpecDocument(path, content))
     const tests = collect(testFiles, (path, content) => this.parseTestFile(path, content))
     return CoverageCheckResult.fromDomain({
@@ -41,9 +52,15 @@ export class CoverageCheckUsecase {
     })
   }
 
-  private async readFiles(patterns: readonly [string, ...string[]]): Promise<ReadAttempt[]> {
-    const uniquePaths = [...new Set(await this.fileFinder.find(patterns))]
-    const pathsInCodeUnitOrder = uniquePaths.sort()
+  private async findFiles(patterns: readonly [string, ...string[]]): Promise<FoundFiles> {
+    const uniquePatterns = [...new Set(patterns)]
+    const found = await Promise.all(uniquePatterns.map(async (pattern) => ({ pattern, paths: await this.fileFinder.find([pattern]) })))
+    const unmatchedPatterns = found.filter(({ paths }) => paths.length === 0).map(({ pattern }) => pattern)
+    const uniquePaths = [...new Set(found.flatMap(({ paths }) => paths))]
+    return { paths: uniquePaths.sort(), unmatchedPatterns }
+  }
+
+  private async readFiles(pathsInCodeUnitOrder: readonly string[]): Promise<ReadAttempt[]> {
     return Promise.all(pathsInCodeUnitOrder.map(async (path) => ({ path, result: await this.fileReader.read(path) })))
   }
 
@@ -60,7 +77,7 @@ export class CoverageCheckUsecase {
         return { kind: 'parsed', items: testFile.items, invalidTags: testFile.invalidTags }
       }
       case 'unsupported-extension':
-        return { kind: 'unsupported-extension', path, extension: result.extension }
+        return { kind: 'unsupported-extension', path, extension: result.extension, supportedExtensions: result.supportedExtensions }
       case 'syntax-error':
         return { kind: 'syntax-error', path, messages: result.messages }
     }

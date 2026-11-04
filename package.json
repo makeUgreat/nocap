@@ -8,6 +8,7 @@
     "typecheck": "pnpm -r typecheck",
     "lint:deps": "pnpm -r lint:deps",
     "lint": "oxlint",
+    "nocap": "pnpm --filter nocap build && node packages/nocap/dist/bin.js --spec 'docs/specs/*.md' --test 'packages/nocap/src/**/*.test.ts' --test 'packages/nocap/test/**/*.integration-test.ts'",
     "format": "oxfmt",
     "format:check": "oxfmt --check"
   },

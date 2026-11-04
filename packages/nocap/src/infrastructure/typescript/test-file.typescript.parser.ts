@@ -4,7 +4,8 @@ import type { TestFileParser, TestFileParseResult } from '../../application/test
 import type { TagSite } from '../../domain/shared/tag-site.boundary.js'
 import { isNonEmpty } from '../../lib/array-length.js'
 
-const SUPPORTED_LANGUAGES = new Map<string, 'ts' | 'tsx' | 'js' | 'jsx'>([
+type Language = 'ts' | 'tsx' | 'js' | 'jsx'
+const LANGUAGE_ENTRIES: readonly [readonly [string, Language], ...(readonly [string, Language])[]] = [
   ['.ts', 'ts'],
   ['.mts', 'ts'],
   ['.cts', 'ts'],
@@ -13,7 +14,10 @@ const SUPPORTED_LANGUAGES = new Map<string, 'ts' | 'tsx' | 'js' | 'jsx'>([
   ['.mjs', 'js'],
   ['.cjs', 'js'],
   ['.jsx', 'jsx'],
-])
+]
+const SUPPORTED_LANGUAGES = new Map(LANGUAGE_ENTRIES)
+const [[FIRST_EXTENSION], ...OTHER_LANGUAGE_ENTRIES] = LANGUAGE_ENTRIES
+const SUPPORTED_EXTENSIONS: readonly [string, ...string[]] = [FIRST_EXTENSION, ...OTHER_LANGUAGE_ENTRIES.map(([extension]) => extension)]
 const TEST_FUNCTIONS = new Set(['it', 'test', 'describe', 'suite'])
 
 type CommentedTestCall = { readonly call: CallExpression; readonly comment: Comment }
@@ -25,7 +29,7 @@ export class TestFileTypescriptParser implements TestFileParser {
     const extension = extname(path)
     const language = SUPPORTED_LANGUAGES.get(extension)
     if (language === undefined) {
-      return { kind: 'unsupported-extension', extension }
+      return { kind: 'unsupported-extension', extension, supportedExtensions: SUPPORTED_EXTENSIONS }
     }
 
     const { program, comments, errors } = parseSync(path, content, { lang: language })

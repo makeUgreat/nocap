@@ -60,8 +60,24 @@ export type InvalidTag =
 /** A file that took no part in the coverage judgment. */
 export type FileError =
   | { readonly kind: 'read-error'; readonly path: string; readonly message: string }
-  | { readonly kind: 'unsupported-extension'; readonly path: string; readonly extension: string }
+  | {
+      readonly kind: 'unsupported-extension'
+      readonly path: string
+      readonly extension: string
+      /** The extensions the test file parser supports, in the order the parser lists them. */
+      readonly supportedExtensions: readonly [string, ...string[]]
+    }
   | { readonly kind: 'syntax-error'; readonly path: string; readonly messages: readonly [string, ...string[]] }
+
+/** A glob pattern that matched no file, with the side it was given for. */
+export type UnmatchedPattern = { readonly side: 'spec' | 'test'; readonly pattern: string }
+
+/** Glob patterns that matched no file. When there is one, the check reads no file and judges nothing. */
+export type UnmatchedPatterns = {
+  readonly kind: 'unmatched-patterns'
+  /** Spec patterns first, then test patterns. Each side is in the order given, and each pattern appears once. */
+  readonly patterns: readonly [UnmatchedPattern, ...UnmatchedPattern[]]
+}
 
 type CoverageCheckResultData = {
   readonly specCount: number
@@ -73,6 +89,8 @@ type CoverageCheckResultData = {
 
 /** The result of one coverage check. It holds plain data only, so that code outside application does not depend on the domain model. */
 export class CoverageCheckResult {
+  readonly kind = 'checked'
+
   private constructor(
     readonly specCount: number,
     readonly coveredSpecCount: number,
