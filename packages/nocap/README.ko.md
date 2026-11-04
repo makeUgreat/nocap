@@ -3,11 +3,16 @@
 <p align="center">명세 문서와 테스트를 연결해 어떤 명세가 아직 검증되지 않았는지 추적합니다.</p>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/@makehash/nocap"><img src="https://img.shields.io/npm/v/@makehash/nocap.svg" alt="npm version" /></a>
   <a href="https://github.com/makeUgreat/nocap/actions/workflows/ci.yml"><img src="https://github.com/makeUgreat/nocap/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/makeUgreat/nocap/blob/master/packages/nocap/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Package License" /></a>
 </p>
 
-<p align="center"><a href="https://github.com/makeUgreat/nocap/blob/master/packages/nocap/README.md">English</a></p>
+<br />
+
+<p align="center">
+  🌐 <a href="https://github.com/makeUgreat/nocap/blob/master/README.md">English</a> · <b>한국어</b>
+</p>
 
 ## 소개
 

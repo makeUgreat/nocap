@@ -3,11 +3,16 @@
 <p align="center">Link spec docs to tests, and track which specs are not verified yet.</p>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/@makehash/nocap"><img src="https://img.shields.io/npm/v/@makehash/nocap.svg" alt="npm version" /></a>
   <a href="https://github.com/makeUgreat/nocap/actions/workflows/ci.yml"><img src="https://github.com/makeUgreat/nocap/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/makeUgreat/nocap/blob/master/packages/nocap/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Package License" /></a>
 </p>
 
-<p align="center"><a href="https://github.com/makeUgreat/nocap/blob/master/packages/nocap/README.ko.md">한국어</a></p>
+<br />
+
+<p align="center">
+  🌐 <b>English</b> · <a href="https://github.com/makeUgreat/nocap/blob/master/packages/nocap/README.ko.md">한국어</a>
+</p>
 
 ## Description
 
