@@ -59,6 +59,7 @@ describe('로그인', () => {
 | 명세 태그의 ID 개수 초과 | `<!-- nocap: AUTH-001, AUTH-002 -->` |
 
 - nocap은 `nocap:`으로 시작하지 않는 주석을 태그로 보지 않고 보고하지 않음. 예: `// TODO`, `// @ts-expect-error`, `// NOCAP: AUTH-001`, `// nocap : AUTH-001`
+- 출력 형식은 [CLI](specs/cli.md)가 정함
 
 ## 설명
 - 태그는 ID 앞의 기호 대신 도구 이름 접두어 `nocap:`으로 표시함
