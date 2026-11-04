@@ -1,7 +1,7 @@
 import type { Html, ListItem, Nodes, Paragraph, Root } from 'mdast'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import type { SpecDocumentParser } from '../../application/spec/spec-document.parser.js'
-import type { SpecTagSite } from '../../domain/spec/spec-item.js'
+import type { SpecTagSite } from '../../domain/spec/spec-tag-site.boundary.js'
 
 const COMMENT_OPEN = '<!--'
 const COMMENT_CLOSE = '-->'

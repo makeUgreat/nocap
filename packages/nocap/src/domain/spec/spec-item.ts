@@ -1,11 +1,9 @@
 import type { NotTag } from '../shared/id-candidates.js'
 import { Location } from '../shared/location.js'
-import type { TagSite } from '../shared/tag-site.js'
+import type { TagSite } from '../shared/tag-site.boundary.js'
 import type { SpecId } from './spec-id.js'
+import type { SpecTagSite } from './spec-tag-site.boundary.js'
 import { type InvalidTagReason, Tag } from './tag.js'
-
-/** The tag site of a list item. `text` is the spec sentence of the list item. */
-export type SpecTagSite = TagSite & { readonly text: string }
 
 /** A spec tag has two or more ids. Only spec tags have this reason. */
 type MultipleIds = { readonly kind: 'multiple-ids'; readonly ids: readonly [SpecId, SpecId, ...SpecId[]] }

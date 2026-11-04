@@ -34,6 +34,21 @@ const config: IConfiguration = {
       to: { path: '^src/infrastructure/' },
     },
     {
+      name: 'infrastructure-only-to-domain-boundary',
+      severity: 'error',
+      comment: `infrastructure may import only the boundary types of domain (*.boundary.ts), not the domain model. See ${architecture}.`,
+      // A parser test may pass tag sites to the domain model to check the spec items it verifies end to end.
+      from: { path: '^src/infrastructure/', pathNot: '[.]test[.]ts$' },
+      to: { path: '^src/domain/', pathNot: '[.]boundary[.]ts$' },
+    },
+    {
+      name: 'domain-boundary-only-to-boundary',
+      severity: 'error',
+      comment: `A boundary type may use only other boundary types, so that it cannot carry the domain model out of domain. See ${architecture}.`,
+      from: { path: '^src/domain/.+[.]boundary[.]ts$' },
+      to: { path: '^src/domain/', pathNot: '[.]boundary[.]ts$' },
+    },
+    {
       name: 'lib-not-to-src',
       severity: 'error',
       comment: `lib is used by every layer and must import nothing in src outside lib. See ${architecture}.`,

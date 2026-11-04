@@ -2,10 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { findViolations, importing } from './config.support.js'
 
 // 레이어마다 import할 수 있는 레이어. docs/architecture.md#의존성-규칙
+// infrastructure는 domain의 경계 타입만 import할 수 있음. 경계 타입은 아래 'domain 경계 타입'에서 확인함
 const allowedLayerImports: Record<string, readonly string[]> = {
   domain: [],
   application: ['domain'],
-  infrastructure: ['application', 'domain'],
+  infrastructure: ['application'],
   presentation: ['application', 'domain'],
 }
 const layers = Object.keys(allowedLayerImports)
@@ -57,6 +58,39 @@ describe.each(applicationContexts)('application/%s', (from) => {
     const violations = await findViolations(importing(`src/application/${from}/a.ts`, `src/application/${to}/b.ts`))
 
     expect(violations.length > 0).toBe(from !== 'coverage')
+  })
+})
+
+// docs/architecture.md#의존성-규칙
+describe('domain 경계 타입', () => {
+  it('infrastructure가 domain의 경계 타입을 import하면 위반이 아니다', async () => {
+    const violations = await findViolations(importing('src/infrastructure/markdown/a.ts', 'src/domain/spec/b.boundary.ts'))
+
+    expect(violations).toEqual([])
+  })
+
+  it('infrastructure가 domain의 경계 타입이 아닌 파일을 import하면 위반이다', async () => {
+    const violations = await findViolations(importing('src/infrastructure/markdown/a.ts', 'src/domain/spec/b.ts'))
+
+    expect(violations.map((violation) => violation.rule)).toEqual(['infrastructure-only-to-domain-boundary'])
+  })
+
+  it('infrastructure의 단위 테스트가 domain의 경계 타입이 아닌 파일을 import하면 위반이 아니다', async () => {
+    const violations = await findViolations(importing('src/infrastructure/markdown/a.test.ts', 'src/domain/spec/b.ts'))
+
+    expect(violations).toEqual([])
+  })
+
+  it('경계 타입이 다른 맥락의 경계 타입을 import하면 위반이 아니다', async () => {
+    const violations = await findViolations(importing('src/domain/spec/a.boundary.ts', 'src/domain/shared/b.boundary.ts'))
+
+    expect(violations).toEqual([])
+  })
+
+  it('경계 타입이 domain의 경계 타입이 아닌 파일을 import하면 위반이다', async () => {
+    const violations = await findViolations(importing('src/domain/spec/a.boundary.ts', 'src/domain/spec/b.ts'))
+
+    expect(violations.map((violation) => violation.rule)).toEqual(['domain-boundary-only-to-boundary'])
   })
 })
 

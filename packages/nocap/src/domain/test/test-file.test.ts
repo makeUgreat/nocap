@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { TestFile } from './test-file.js'
-import type { TagSite } from '../shared/tag-site.js'
+import type { TagSite } from '../shared/tag-site.boundary.js'
 
 const call = (line: number, body: string): TagSite => ({
   line,

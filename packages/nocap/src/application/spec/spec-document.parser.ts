@@ -1,4 +1,4 @@
-import type { SpecTagSite } from '../../domain/spec/spec-item.js'
+import type { SpecTagSite } from '../../domain/spec/spec-tag-site.boundary.js'
 
 export interface SpecDocumentParser {
   /**

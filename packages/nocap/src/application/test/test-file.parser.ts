@@ -1,4 +1,4 @@
-import type { TagSite } from '../../domain/shared/tag-site.js'
+import type { TagSite } from '../../domain/shared/tag-site.boundary.js'
 
 /** The whole file was read. */
 export type TestFileParsed = {
