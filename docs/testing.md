@@ -59,7 +59,7 @@ related:
 ```ts
 // spec-document.markdown.parser.test.ts
 
-// @MD-001
+// nocap: MD-001
 describe('명세 태그가 있는 리스트 항목마다 명세 항목 생성', () => {
   it('명세 태그가 있는 리스트 항목이 2개이면 명세 항목 2개를 반환한다', () => {
     // ...
