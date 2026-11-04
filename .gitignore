@@ -6,7 +6,8 @@ dist/
 *.tsbuildinfo
 
 # Test output
-coverage/
+/coverage/
+/packages/*/coverage/
 
 # Logs
 *.log
