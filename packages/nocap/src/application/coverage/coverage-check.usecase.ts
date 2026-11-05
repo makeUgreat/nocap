@@ -53,7 +53,7 @@ export class CoverageCheckUsecase {
 
   private async findFiles(patterns: readonly [string, ...string[]]): Promise<FoundFiles> {
     const uniquePatterns = [...new Set(patterns)]
-    const found = await Promise.all(uniquePatterns.map(async (pattern) => ({ pattern, paths: await this.fileFinder.find([pattern]) })))
+    const found = await Promise.all(uniquePatterns.map(async (pattern) => ({ pattern, paths: await this.fileFinder.find(pattern) })))
     const unmatchedPatterns = found.filter(({ paths }) => paths.length === 0).map(({ pattern }) => pattern)
     const uniquePaths = [...new Set(found.flatMap(({ paths }) => paths))]
     return { paths: uniquePaths.sort(), unmatchedPatterns }

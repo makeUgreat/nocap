@@ -6,8 +6,8 @@ const EXCLUDED_DIRECTORIES = ['**/node_modules/**', '**/.git/**']
 export class FileFsFinder implements FileFinder {
   constructor(private readonly rootDir: string) {}
 
-  async find(patterns: readonly [string, ...string[]]): Promise<string[]> {
-    return glob([...patterns], {
+  async find(pattern: string): Promise<string[]> {
+    return glob(pattern, {
       cwd: this.rootDir,
       ignore: EXCLUDED_DIRECTORIES,
       dot: true,

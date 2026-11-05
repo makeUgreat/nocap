@@ -10,7 +10,7 @@ const UNREADABLE = '<unreadable>'
 const SYNTAX_ERROR = '<syntax error>'
 
 const fakeFinder = (pathsByPattern: Record<string, string[]>): FileFinder => ({
-  find: async (patterns) => patterns.flatMap((pattern) => pathsByPattern[pattern] ?? []),
+  find: async (pattern) => pathsByPattern[pattern] ?? [],
 })
 
 const fakeReader = (contentByPath: Record<string, string>): FileReader => ({
