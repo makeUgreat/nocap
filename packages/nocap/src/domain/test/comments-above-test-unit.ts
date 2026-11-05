@@ -11,21 +11,20 @@ type Collected = { readonly found: readonly CommentsAboveTestUnit[]; readonly mi
 
 export class CommentsAboveTestUnit {
   private constructor(
-    readonly unitLine: number,
+    readonly unit: TestUnit,
     readonly comments: readonly [TestComment, ...TestComment[]],
   ) {}
 
   static collect(comments: readonly TestComment[], testUnits: readonly TestUnit[]): Collected {
     const ownLineByEndLine = new Map(comments.filter((comment) => !comment.hasCodeOnLine).map((comment) => [comment.endLine, comment]))
-    const unitLines = [...new Set(testUnits.map(({ line }) => line))].sort((a, b) => a - b)
     const found: CommentsAboveTestUnit[] = []
     const inRuns = new Set<TestComment>()
 
-    for (const unitLine of unitLines) {
-      const run = runAbove(unitLine, ownLineByEndLine)
+    for (const unit of inLineOrder(testUnits)) {
+      const run = runAbove(unit.line, ownLineByEndLine)
       if (!isNonEmpty(run)) continue
       run.forEach((comment) => inRuns.add(comment))
-      found.push(new CommentsAboveTestUnit(unitLine, run))
+      found.push(new CommentsAboveTestUnit(unit, run))
     }
 
     const misplaced = comments
@@ -33,6 +32,15 @@ export class CommentsAboveTestUnit {
       .map((comment): MisplacedTestComment => ({ kind: comment.hasCodeOnLine ? 'after-code' : 'not-above-test-call', comment }))
     return { found, misplaced }
   }
+}
+
+// A comment run attaches to the line where a test unit starts, so two units on one line would share the run.
+// The parser contract rules this out, and nothing here can tell which of the two is right.
+function inLineOrder(testUnits: readonly TestUnit[]): TestUnit[] {
+  const sorted = [...testUnits].sort((a, b) => a.line - b.line)
+  const repeated = sorted.find((unit, index) => index > 0 && sorted[index - 1]?.line === unit.line)
+  if (repeated !== undefined) throw new Error(`Test units must start on different lines, got two on line ${repeated.line}`)
+  return sorted
 }
 
 function runAbove(unitLine: number, ownLineByEndLine: ReadonlyMap<number, TestComment>): TestComment[] {

@@ -43,7 +43,7 @@ const fakeTestParser: TestFileParser = {
       style: 'line' as const,
       hasCodeOnLine: false,
     }))
-    return { kind: 'parsed', comments, testUnits: bodies.map((_, index) => ({ line: 2 * index + 2 })) }
+    return { kind: 'parsed', comments, testUnits: bodies.map((_, index) => ({ line: 2 * index + 2, endLine: 2 * index + 2 })) }
   },
 }
 

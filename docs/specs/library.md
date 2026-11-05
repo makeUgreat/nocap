@@ -38,6 +38,7 @@ related:
 - nocap은 [커버리지 판정](coverage.md#커버-여부)이 커버되지 않음으로 판정한 명세 항목의 `status`를 `uncovered-spec`으로 줌 <!-- nocap: LIB-012 -->
 - nocap은 ID가 같은 명세 항목이 2개 이상이면 그 명세 항목들의 `status`를 `duplicate-id`로 주고 `testItems`를 비움. 예: `auth.md`와 `login.md`에 둘 다 `AUTH-001`이 있으면, `// nocap: AUTH-001` 테스트가 있어도 두 명세 항목의 `testItems`는 비어 있음 <!-- nocap: LIB-013 -->
 - nocap은 `status`가 `covered`인 명세 항목의 `testItems`에 그 ID를 가리키는 테스트 항목을 모두 넣음. 테스트 항목마다 위치를 줌 <!-- nocap: LIB-014 -->
+- nocap은 `testItems`의 테스트 항목마다 끝 줄 `endLine`을 줌 <!-- nocap: LIB-019 -->
 
 ## 목록 순서
 - nocap은 `specItems`를 위치의 경로의 코드 단위 순서로 놓고, 같은 경로 안에서는 줄 순서로 놓음. 예: `docs/B.md`의 명세 항목이 `docs/a.md`의 명세 항목보다 앞섬 <!-- nocap: LIB-015 -->

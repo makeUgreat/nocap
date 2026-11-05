@@ -269,6 +269,33 @@ describe('테스트 파일 경로와 테스트 호출이 시작하는 줄을 테
   })
 })
 
+// nocap: TP-041
+describe('테스트 호출이 끝나는 줄을 테스트 항목의 끝 줄로 사용', () => {
+  it('테스트 호출이 2줄에서 시작하고 닫는 괄호가 4줄에 있으면 끝 줄 4를 반환한다', () => {
+    const content = code('// nocap: A-001', "it('a', () => {", '  expect(1).toBe(1)', '})')
+
+    expect(parsedOf(content).testItems[0]?.endLine).toBe(4)
+  })
+
+  it('테스트 호출이 한 줄이면 시작 줄을 끝 줄로 반환한다', () => {
+    const content = code('', '// nocap: A-001', "it('a', () => {})")
+
+    expect(parsedOf(content).testItems[0]?.endLine).toBe(3)
+  })
+
+  it('수식자가 붙은 호출이면 가장 바깥 호출이 끝나는 줄을 반환한다', () => {
+    const content = code('// nocap: A-001', "test.each([1])('a', () => {", '  expect(1).toBe(1)', '})')
+
+    expect(parsedOf(content).testItems[0]?.endLine).toBe(4)
+  })
+
+  it('테스트 묶음이면 안쪽 테스트가 아니라 묶음이 끝나는 줄을 반환한다', () => {
+    const content = code('// nocap: A-001', "describe('a', () => {", "  it('b', () => {", '  })', '})')
+
+    expect(parsedOf(content).testItems[0]?.endLine).toBe(5)
+  })
+})
+
 // nocap: TP-033
 describe('ID 규칙을 어긴 테스트 태그는 테스트 호출에 붙이지 않음', () => {
   it('ID에 규칙 밖의 문자가 있으면 테스트 항목을 만들지 않는다', () => {

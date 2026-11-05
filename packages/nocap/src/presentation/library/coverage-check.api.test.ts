@@ -130,8 +130,8 @@ const spec = (id: string, path: string, line: number, text = ''): SpecItem => {
 }
 const lineComment = (line: number, body: string) => ({ line, endLine: line, body, style: 'line' as const, hasCodeOnLine: false })
 // The tag is on the line above the test unit, so the test item is at `line`.
-const test = (id: string, path: string, line: number): TestItem => {
-  const [item] = TestFile.of(path, [lineComment(line - 1, `nocap: ${id}`)], [{ line }]).testItems
+const test = (id: string, path: string, line: number, endLine = line): TestItem => {
+  const [item] = TestFile.of(path, [lineComment(line - 1, `nocap: ${id}`)], [{ line, endLine }]).testItems
   if (item === undefined) throw new Error(`not a test item in fixture: ${id}`)
   return item
 }
@@ -195,7 +195,7 @@ describe('유스케이스 결과를 공개 타입으로 바꿈', () => {
   })
 
   it('ID 규칙 위반이면 위치와 규칙을 어긴 ID 후보를 담는다', async () => {
-    const { invalidTags } = TestFile.of('a.test.ts', [lineComment(1, 'nocap: B C')], [{ line: 2 }])
+    const { invalidTags } = TestFile.of('a.test.ts', [lineComment(1, 'nocap: B C')], [{ line: 2, endLine: 2 }])
 
     const result = await checkedPublicOf(checkedOf({ invalidTags }))
 
@@ -217,7 +217,7 @@ describe('유스케이스 결과를 공개 타입으로 바꿈', () => {
   })
 
   it('ID 누락이면 위치만 담는다', async () => {
-    const { invalidTags } = TestFile.of('a.test.ts', [lineComment(1, 'nocap:')], [{ line: 2 }])
+    const { invalidTags } = TestFile.of('a.test.ts', [lineComment(1, 'nocap:')], [{ line: 2, endLine: 2 }])
 
     const result = await checkedPublicOf(checkedOf({ invalidTags }))
 
@@ -225,7 +225,11 @@ describe('유스케이스 결과를 공개 타입으로 바꿈', () => {
   })
 
   it('같은 ID 반복이면 ID 문자열과 첫 태그의 줄을 담는다', async () => {
-    const { invalidTags } = TestFile.of('a.test.ts', [lineComment(1, 'nocap: A-001'), lineComment(2, 'nocap: A-001')], [{ line: 3 }])
+    const { invalidTags } = TestFile.of(
+      'a.test.ts',
+      [lineComment(1, 'nocap: A-001'), lineComment(2, 'nocap: A-001')],
+      [{ line: 3, endLine: 3 }],
+    )
 
     const result = await checkedPublicOf(checkedOf({ invalidTags }))
 
@@ -240,11 +244,11 @@ describe('유스케이스 결과를 공개 타입으로 바꿈', () => {
     expect(result.invalidTags).toEqual([{ kind: 'no-sentence', location: { path: 'a.md', line: 5 } }])
   })
 
-  it('커버된 명세 항목이면 상태 covered와 연결된 테스트 항목의 위치를 담는다', async () => {
+  it('커버된 명세 항목이면 상태 covered와 연결된 테스트 항목의 위치와 끝 줄을 담는다', async () => {
     const result = await checkedPublicOf(
       checkedOf({
         specItems: [spec('A-001', 'a.md', 3, '잠금')],
-        testItems: [test('A-001', 'a.test.ts', 2), test('A-001', 'a.test.ts', 5)],
+        testItems: [test('A-001', 'a.test.ts', 2), test('A-001', 'a.test.ts', 5, 7)],
       }),
     )
 
@@ -254,7 +258,10 @@ describe('유스케이스 결과를 공개 타입으로 바꿈', () => {
         text: '잠금',
         location: { path: 'a.md', line: 3 },
         status: 'covered',
-        testItems: [{ location: { path: 'a.test.ts', line: 2 } }, { location: { path: 'a.test.ts', line: 5 } }],
+        testItems: [
+          { location: { path: 'a.test.ts', line: 2 }, endLine: 2 },
+          { location: { path: 'a.test.ts', line: 5 }, endLine: 7 },
+        ],
       },
     ])
   })

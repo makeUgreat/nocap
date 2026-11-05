@@ -13,10 +13,10 @@ const comment = (line: number, endLine = line, hasCodeOnLine = false): TestComme
 const collect = (comments: TestComment[], unitLines: number[]) =>
   CommentsAboveTestUnit.collect(
     comments,
-    unitLines.map((line): TestUnit => ({ line })),
+    unitLines.map((line): TestUnit => ({ line, endLine: line })),
   )
 const runsOf = (comments: TestComment[], unitLines: number[]) =>
-  collect(comments, unitLines).found.map((run) => [run.unitLine, run.comments.map(({ line }) => line)])
+  collect(comments, unitLines).found.map((run) => [run.unit.line, run.comments.map(({ line }) => line)])
 const misplacedOf = (comments: TestComment[], unitLines: number[]) =>
   collect(comments, unitLines).misplaced.map(({ kind, comment: { line } }) => [kind, line])
 
@@ -41,8 +41,8 @@ describe('줄 탐색으로 주석 덩어리 모으기', () => {
     expect(runsOf([comment(1)], [3])).toEqual([])
   })
 
-  it('같은 줄의 테스트 단위가 여러 번 들어와도 주석 덩어리는 1개만 만든다', () => {
-    expect(runsOf([comment(1)], [2, 2])).toEqual([[2, [1]]])
+  it('같은 줄에서 시작하는 테스트 단위가 2개이면 예외를 던진다', () => {
+    expect(() => runsOf([comment(1)], [2, 2])).toThrow('Test units must start on different lines, got two on line 2')
   })
 
   it('주석 덩어리는 테스트 단위의 줄 순서를 따른다', () => {

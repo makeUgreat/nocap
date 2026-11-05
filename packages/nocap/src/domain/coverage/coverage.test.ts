@@ -14,7 +14,7 @@ const test = (ids: string, path = 'a.test.ts'): TestItem => {
   const comments = ids
     .split(', ')
     .map((id, index) => ({ line: index + 1, endLine: index + 1, body: `nocap: ${id}`, style: 'line' as const, hasCodeOnLine: false }))
-  const [item] = TestFile.of(path, comments, [{ line: comments.length + 1 }]).testItems
+  const [item] = TestFile.of(path, comments, [{ line: comments.length + 1, endLine: comments.length + 1 }]).testItems
   if (item === undefined) throw new Error(`not a test item in fixture: ${ids}`)
   return item
 }
