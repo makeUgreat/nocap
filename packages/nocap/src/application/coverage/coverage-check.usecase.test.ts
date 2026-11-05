@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import type { CheckedCoverage } from './coverage-check.result.js'
 import { CoverageCheckUsecase, type CoverageCheckInput } from './coverage-check.usecase.js'
 import type { FileFinder } from '../file/file.finder.js'
-import type { FileReader } from '../file/file.reader.js'
+import type { FileReader, FileReadResult } from '../file/file.reader.js'
 import type { SpecDocumentParser } from '../spec/spec-document.parser.js'
-import type { TestFileParser } from '../test/test-file.parser.js'
+import type { TestFileParser, TestFileParseResult } from '../test/test-file.parser.js'
 
 const UNREADABLE = '<unreadable>'
 const SYNTAX_ERROR = '<syntax error>'
@@ -54,7 +54,8 @@ const runUsecase = (
   contentByPath: Record<string, string>,
   input: CoverageCheckInput = DEFAULT_INPUT,
   reader: FileReader = fakeReader(contentByPath),
-) => new CoverageCheckUsecase(fakeFinder(pathsByPattern), reader, fakeSpecParser, fakeTestParser).run(input)
+  testParser: TestFileParser = fakeTestParser,
+) => new CoverageCheckUsecase(fakeFinder(pathsByPattern), reader, fakeSpecParser, testParser).run(input)
 
 const run = async (pathsByPattern: Record<string, string[]>, contentByPath: Record<string, string>): Promise<CheckedCoverage> => {
   const result = await runUsecase(pathsByPattern, contentByPath)
@@ -188,6 +189,34 @@ describe('경로의 코드 단위 순서대로 파일을 판정 결과에 반영
     const result = await run({ specs: ['a.md', 'B.md'], tests: ['empty.test.ts'] }, { 'a.md': 'nocap: A-001', 'B.md': 'nocap: B-001' })
 
     expect(uncoveredSpecPathsOf(result)).toEqual(['B.md', 'a.md'])
+  })
+})
+
+describe('포트 결과에 있는 남는 필드', () => {
+  // A port result can hold fields that its type does not declare, for example after a type assertion in an adapter.
+  const fileErrorsOf = async (reader: FileReader, testParser: TestFileParser) => {
+    const result = await runUsecase({ specs: ['a.md'], tests: ['a.test.ts'] }, {}, DEFAULT_INPUT, reader, testParser)
+    if (result.kind !== 'checked') throw new Error(`Expected a checked result, got ${result.kind}`)
+    return result.fileErrors
+  }
+
+  it('파일 읽기 결과에 타입에 없는 필드가 있어도 파일 오류에 담지 않는다', async () => {
+    const reader: FileReader = {
+      read: async (path) =>
+        path === 'a.md' ? ({ kind: 'read-error', message: 'EACCES', internal: 1 } as FileReadResult) : { kind: 'read', content: '' },
+    }
+
+    expect(await fileErrorsOf(reader, fakeTestParser)).toStrictEqual([{ kind: 'read-error', path: 'a.md', message: 'EACCES' }])
+  })
+
+  it('테스트 파일 파서 결과에 타입에 없는 필드가 있어도 파일 오류에 담지 않는다', async () => {
+    const testParser: TestFileParser = {
+      parse: () => ({ kind: 'syntax-error', messages: ['unexpected token'], internal: 1 }) as TestFileParseResult,
+    }
+
+    expect(await fileErrorsOf(fakeReader({}), testParser)).toStrictEqual([
+      { kind: 'syntax-error', path: 'a.test.ts', messages: ['unexpected token'] },
+    ])
   })
 })
 
