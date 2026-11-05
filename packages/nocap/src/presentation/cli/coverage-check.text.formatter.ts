@@ -30,6 +30,7 @@ const DIAGNOSTIC_KINDS = [
 ] as const
 type DiagnosticKind = (typeof DIAGNOSTIC_KINDS)[number]
 
+type Paint = (codes: string[], text: string) => string
 type Segment = { readonly text: string; readonly isValue: boolean }
 type Diagnostic = {
   readonly path: string
@@ -43,6 +44,7 @@ const ANSI = { bold: '1', dim: '2', red: '31', green: '32', yellow: '33', cyan: 
 const ID_CHARS_HINT = 'use only A-Z, a-z, 0-9, "-", "_"'
 const ONE_ID_HINT = 'a tag takes 1 id; write one tag per id'
 const FIXED_MESSAGES = {
+  'missing-id': { message: 'missing id in the tag', hint: 'write an id, e.g. "nocap: AUTH-001"' },
   'block-comment': { message: 'test tag is in a block comment', hint: 'use a "//" line comment' },
   'no-sentence': { message: 'spec tag has no spec sentence before it', hint: 'write the spec sentence before the tag' },
   'not-at-item-end': {
@@ -72,15 +74,7 @@ export class CoverageCheckTextFormatter {
   private stdoutOf(diagnostics: readonly Diagnostic[]): string {
     const paint = painter(this.colors.stdout)
     return diagnostics
-      .map((diagnostic, index) => {
-        const samePathAsPrevious = index > 0 && diagnostics[index - 1]?.path === diagnostic.path
-        const location =
-          paint(samePathAsPrevious ? [ANSI.dim] : [ANSI.cyan], diagnostic.path) +
-          (diagnostic.line === undefined ? '' : `:${paint([ANSI.bold], String(diagnostic.line))}`)
-        const message = diagnostic.message.map((segment) => (segment.isValue ? paint([ANSI.yellow], segment.text) : segment.text)).join('')
-        const hint = diagnostic.hint === undefined ? '' : paint([ANSI.dim], `; hint: ${diagnostic.hint}`)
-        return `${location}: ${paint([ANSI.red, ANSI.bold], 'error')}${paint([ANSI.red], `[${diagnostic.kind}]`)}: ${message}${hint}\n`
-      })
+      .map((diagnostic, index) => diagnosticLine(diagnostic, index > 0 && diagnostics[index - 1]?.path === diagnostic.path, paint))
       .join('')
   }
 
@@ -93,6 +87,15 @@ export class CoverageCheckTextFormatter {
     if (diagnostics.length === 0) return `${coverageLine}\n`
     return `${paint([ANSI.red, ANSI.bold], errorsLineOf(diagnostics))}\n${coverageLine}\n`
   }
+}
+
+function diagnosticLine(diagnostic: Diagnostic, samePathAsPrevious: boolean, paint: Paint): string {
+  const path = paint(samePathAsPrevious ? [ANSI.dim] : [ANSI.cyan], diagnostic.path)
+  const line = diagnostic.line === undefined ? '' : `:${paint([ANSI.bold], String(diagnostic.line))}`
+  const severity = paint([ANSI.red, ANSI.bold], 'error') + paint([ANSI.red], `[${diagnostic.kind}]`)
+  const message = diagnostic.message.map((segment) => (segment.isValue ? paint([ANSI.yellow], segment.text) : segment.text)).join('')
+  const hint = diagnostic.hint === undefined ? '' : paint([ANSI.dim], `; hint: ${diagnostic.hint}`)
+  return `${path}${line}: ${severity}: ${message}${hint}\n`
 }
 
 function coverageProblemDiagnostics(problem: CoverageProblem): Diagnostic[] {
@@ -117,8 +120,6 @@ function coverageProblemDiagnostics(problem: CoverageProblem): Diagnostic[] {
 function invalidTagDiagnostics(invalidTag: InvalidTag): Diagnostic[] {
   const { location } = invalidTag
   switch (invalidTag.kind) {
-    case 'missing-id':
-      return [diagnosticAt(location, 'missing-id', [plain('missing id in the tag')], 'write an id, e.g. "nocap: AUTH-001"')]
     case 'multiple-ids': {
       const values = invalidTag.values.flatMap((id, index) => (index === 0 ? [value(id)] : [plain(', '), value(id)]))
       const message = [plain(`tag has ${invalidTag.values.length} ids `), ...values]
@@ -126,6 +127,7 @@ function invalidTagDiagnostics(invalidTag: InvalidTag): Diagnostic[] {
     }
     case 'id-rule-violation':
       return [invalidIdDiagnostic(location, invalidTag.invalidCandidate)]
+    case 'missing-id':
     case 'block-comment':
     case 'no-sentence':
     case 'not-at-item-end':
@@ -218,7 +220,7 @@ function countOf(count: number, noun: string): string {
   return `${count} ${noun}${count === 1 ? '' : 's'}`
 }
 
-function painter(enabled: boolean): (codes: string[], text: string) => string {
+function painter(enabled: boolean): Paint {
   return (codes, text) => (enabled ? `\u001b[${codes.join(';')}m${text}\u001b[0m` : text)
 }
 
