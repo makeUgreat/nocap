@@ -54,7 +54,7 @@ describe('실제 TypeScript 파일의 주석과 테스트 단위', () => {
   it('쌓은 태그가 섞인 파일이면 틀린 태그 없이 테스트 항목을 만든다', () => {
     const testFile = testFileOf('success.ts')
 
-    expect([testFile.items.map((item) => item.ids.values.map((id) => id.value)), testFile.invalidTags]).toEqual([
+    expect([testFile.testItems.map((item) => item.ids.values.map((id) => id.value)), testFile.invalidTags]).toEqual([
       [['A-001'], ['A-002'], ['A-003', 'A-004'], ['A-005'], ['B-001']],
       [],
     ])
@@ -63,12 +63,12 @@ describe('실제 TypeScript 파일의 주석과 테스트 단위', () => {
   it('빈 줄, 블록 주석, 코드 뒤 주석, 목록에 없는 호출, 감싼 호출, 호출이 아닌 문장, 문자열 안에만 태그가 있는 파일이면 테스트 항목 없이 문자열 밖의 태그만 위치와 이유로 보고한다', () => {
     const testFile = testFileOf('failure.ts')
 
-    expect([testFile.items, testFile.invalidTags.map(({ kind, location }) => [location.line, kind])]).toEqual([
+    expect([testFile.testItems, testFile.invalidTags.map(({ kind, location }) => [location.line, kind])]).toEqual([
       [],
       [
         [4, 'not-above-test-call'],
         [8, 'block-comment'],
-        [11, 'block-comment'],
+        [12, 'block-comment'],
         [16, 'after-code'],
         [19, 'after-code'],
         [21, 'not-above-test-call'],

@@ -34,9 +34,9 @@ related:
   - driving adapter와 driven adapter는 서로 몰라야 함. 둘을 연결하는 일은 진입점만 함
   - `presentation`이 어댑터를 직접 만들면 command 테스트에 가짜 포트를 넣을 수 없음
   - 진입점이 2개 이상이 되어도 각 진입점이 같은 방식으로 조립함. `presentation` 안에 조립 코드가 흩어지지 않음
-- `infrastructure`는 `domain`이 정한 경계 타입만 import함. 도메인 모델은 import하지 않음. 예: 파서는 `TagSite`를 만들어 돌려주고 `SpecItem`은 쓰지 않음
+- `infrastructure`는 `domain`이 정한 경계 타입만 import함. 도메인 모델은 import하지 않음. 예: 파서는 `SpecComment`를 만들어 돌려주고 `SpecItem`은 쓰지 않음
   - 포트는 경계 타입으로 입출력을 정함. 경계 타입이 바뀌지 않으면 도메인 모델을 고쳐도 어댑터를 고치지 않음
-  - 어댑터의 단위 테스트는 예외임. 파서가 만든 태그 자리를 도메인 모델에 넘겨 명세 항목을 끝까지 확인함
+  - 어댑터의 단위 테스트는 예외임. 파서가 만든 경계 타입을 도메인 모델에 넘겨 명세 항목을 끝까지 확인함
 - 경계 타입은 다른 경계 타입만 씀
   - 경계 타입이 도메인 모델을 품으면 import 규칙을 지켜도 도메인 모델이 어댑터로 넘어감
 - `presentation`은 `domain`을 import하지 않음. `application`이 유스케이스 결과를 `presentation`용 타입으로 바꿔 넘김

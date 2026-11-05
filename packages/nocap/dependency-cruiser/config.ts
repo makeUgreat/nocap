@@ -44,7 +44,7 @@ const config: IConfiguration = {
       name: 'infrastructure-only-to-domain-boundary',
       severity: 'error',
       comment: `infrastructure may import only the boundary types of domain (*.boundary.ts), not the domain model. See ${architecture}.`,
-      // A parser test may pass tag sites to the domain model to check the spec items it verifies end to end.
+      // A parser test may pass the boundary types it made to the domain model to check the spec items it verifies end to end.
       from: { path: '^src/infrastructure/', pathNot: '[.]test[.]ts$' },
       to: { path: '^src/domain/', pathNot: '[.]boundary[.]ts$' },
     },

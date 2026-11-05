@@ -9,7 +9,7 @@ const testFileOf = (path: string, content: string) => {
   return TestFile.of(path, result.comments, result.testUnits)
 }
 const idsOf = (content: string, fileName = 'a.test.ts') =>
-  testFileOf(fileName, content).items.map((item) => item.ids.values.map((id) => id.value))
+  testFileOf(fileName, content).testItems.map((item) => item.ids.values.map((id) => id.value))
 const code = (...lines: string[]) => lines.join('\n')
 
 // nocap: TP-001
@@ -82,7 +82,7 @@ describe('주석 덩어리 아래 줄에서 시작하는 가장 바깥 호출만
   it('아래 줄에서 테스트 묶음과 그 안의 테스트가 함께 시작하면 테스트 묶음만 테스트 항목이 된다', () => {
     const content = code('// nocap: A-001', "describe('a', () => { it('b', () => {}) })")
 
-    expect(testFileOf('a.test.ts', content).items.map((item) => item.location.line)).toEqual([2])
+    expect(testFileOf('a.test.ts', content).testItems.map((item) => item.location.line)).toEqual([2])
   })
 
   it('가장 바깥 호출이 테스트 호출이 아니면 그 안의 테스트 호출은 테스트 항목이 되지 않는다', () => {
@@ -259,13 +259,13 @@ describe('테스트 파일 경로와 테스트 호출이 시작하는 줄을 테
   it('테스트 호출이 3번째 줄에 있으면 테스트 파일 경로와 줄 3을 위치로 반환한다', () => {
     const content = code('', '// nocap: A-001', "it('a', () => {})")
 
-    expect(parsedOf(content).items[0]?.location).toEqual({ path: 'src/a.test.ts', line: 3 })
+    expect(parsedOf(content).testItems[0]?.location).toEqual({ path: 'src/a.test.ts', line: 3 })
   })
 
   it('테스트 호출이 여러 줄이면 호출이 시작하는 줄을 반환한다', () => {
     const content = code('// nocap: A-001', 'it(', "  'a',", '  () => {},', ')')
 
-    expect(parsedOf(content).items[0]?.location.line).toBe(2)
+    expect(parsedOf(content).testItems[0]?.location.line).toBe(2)
   })
 })
 
@@ -313,7 +313,7 @@ describe('ID가 2개 이상인 테스트 태그는 테스트 호출에 붙이지
   it('쉼표로 ID 2개를 이으면 테스트 항목을 만들지 않고 그 값들을 ID 개수 초과로 보고한다', () => {
     const testFile = parsedOf(code('// nocap: A-001, A-002', "it('a', () => {})"))
 
-    expect([testFile.items, testFile.invalidTags]).toEqual([
+    expect([testFile.testItems, testFile.invalidTags]).toEqual([
       [],
       [{ kind: 'multiple-ids', location: { path: 'src/a.test.ts', line: 1 }, values: ['A-001', 'A-002'] }],
     ])
@@ -396,7 +396,7 @@ describe('주석 덩어리 안의 같은 ID는 첫 태그만 붙이고 뒤의 �
   it('같은 ID의 테스트 태그가 2개이면 첫 태그만 붙이고 뒤의 태그를 첫 태그의 줄과 함께 보고한다', () => {
     const testFile = parsedOf(code('// nocap: A-001', '// nocap: A-001', "it('a', () => {})"))
 
-    expect([testFile.items.map((item) => item.ids.values.map((id) => id.value)), testFile.invalidTags]).toEqual([
+    expect([testFile.testItems.map((item) => item.ids.values.map((id) => id.value)), testFile.invalidTags]).toEqual([
       [['A-001']],
       [{ kind: 'repeated-id', location: { path: 'src/a.test.ts', line: 2 }, id: { value: 'A-001' }, firstTagLine: 1 }],
     ])
@@ -440,6 +440,12 @@ describe('테스트 태그가 있는 줄을 틀린 테스트 태그의 위치로
     const content = code("it('a', () => {})", '', '', '// nocap: A.1', "it('b', () => {})")
 
     expect(parsedOf(content).invalidTags.map((invalidTag) => invalidTag.location)).toEqual([{ path: 'src/a.test.ts', line: 4 }])
+  })
+
+  it('여러 줄 블록 주석이면 nocap:으로 시작하는 줄을 위치로 쓴다', () => {
+    const content = code('/**', ' * 설명', ' * nocap: A-001', ' */', "it('a', () => {})")
+
+    expect(parsedOf(content).invalidTags.map((invalidTag) => invalidTag.location)).toEqual([{ path: 'src/a.test.ts', line: 3 }])
   })
 })
 
