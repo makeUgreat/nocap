@@ -42,6 +42,20 @@ type Diagnostic = {
 const ANSI = { bold: '1', dim: '2', red: '31', green: '32', yellow: '33', cyan: '36' } as const
 const ID_CHARS_HINT = 'use only A-Z, a-z, 0-9, "-", "_"'
 const ONE_ID_HINT = 'a tag takes 1 id; write one tag per id'
+const FIXED_MESSAGES = {
+  'block-comment': { message: 'test tag is in a block comment', hint: 'use a "//" line comment' },
+  'no-sentence': { message: 'spec tag has no spec sentence before it', hint: 'write the spec sentence before the tag' },
+  'not-at-item-end': {
+    message: 'spec tag is not at the end of the first paragraph of a list item',
+    hint: 'put the tag at the end of the first paragraph of the list item',
+  },
+  'outside-list-item': { message: 'spec tag is not in a list item', hint: 'put the tag at the end of a list item' },
+  'after-code': { message: 'test tag is on the same line as code', hint: 'put the tag on its own line above the test call' },
+  'not-above-test-call': {
+    message: 'test tag is not above a test call',
+    hint: 'put the tag right above the test call, with no blank line between',
+  },
+} as const satisfies Partial<Record<DiagnosticKind, { readonly message: string; readonly hint: string }>>
 
 export class CoverageCheckTextFormatter {
   constructor(private readonly colors: ColorSupport = { stdout: false, stderr: false }) {}
@@ -113,42 +127,14 @@ function invalidTagDiagnostics(invalidTag: InvalidTag): Diagnostic[] {
     case 'id-rule-violation':
       return [invalidIdDiagnostic(location, invalidTag.invalidCandidate)]
     case 'block-comment':
-      return [diagnosticAt(location, 'block-comment', [plain('test tag is in a block comment')], 'use a "//" line comment')]
     case 'no-sentence':
-      return [
-        diagnosticAt(location, 'no-sentence', [plain('spec tag has no spec sentence before it')], 'write the spec sentence before the tag'),
-      ]
     case 'not-at-item-end':
-      return [
-        diagnosticAt(
-          location,
-          'not-at-item-end',
-          [plain('spec tag is not at the end of the first paragraph of a list item')],
-          'put the tag at the end of the first paragraph of the list item',
-        ),
-      ]
     case 'outside-list-item':
-      return [
-        diagnosticAt(location, 'outside-list-item', [plain('spec tag is not in a list item')], 'put the tag at the end of a list item'),
-      ]
     case 'after-code':
-      return [
-        diagnosticAt(
-          location,
-          'after-code',
-          [plain('test tag is on the same line as code')],
-          'put the tag on its own line above the test call',
-        ),
-      ]
-    case 'not-above-test-call':
-      return [
-        diagnosticAt(
-          location,
-          'not-above-test-call',
-          [plain('test tag is not above a test call')],
-          'put the tag right above the test call, with no blank line between',
-        ),
-      ]
+    case 'not-above-test-call': {
+      const { message, hint } = FIXED_MESSAGES[invalidTag.kind]
+      return [diagnosticAt(location, invalidTag.kind, [plain(message)], hint)]
+    }
     case 'repeated-id':
       return [diagnosticAt(location, 'repeated-id', [value(invalidTag.id), plain(` is already tagged at line ${invalidTag.firstTagLine}`)])]
   }
