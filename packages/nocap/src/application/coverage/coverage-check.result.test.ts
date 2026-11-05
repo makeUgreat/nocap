@@ -3,19 +3,26 @@ import { Coverage } from '../../domain/coverage/coverage.js'
 import { SpecDocument } from '../../domain/spec/spec-document.js'
 import { SpecItem } from '../../domain/spec/spec-item.js'
 import { TestFile } from '../../domain/test/test-file.js'
-import { TestItem } from '../../domain/test/test-item.js'
+import type { TestItem } from '../../domain/test/test-item.js'
 import { CoverageCheckResult } from './coverage-check.result.js'
 
 const spec = (id: string, path: string, line: number, text = ''): SpecItem => {
-  const result = SpecItem.parse(path, { line, text, comment: { line, body: `nocap: ${id}` } })
+  const result = SpecItem.parse(path, { line, body: `nocap: ${id}`, placement: { kind: 'first-paragraph-end', itemLine: line, text } })
   if (result.kind !== 'valid') throw new Error(`not a spec item in fixture: ${id}`)
   return result.item
 }
-const test = (ids: string, path: string, line: number): TestItem => {
-  const result = TestItem.parse(path, { line, comment: { line, body: `nocap: ${ids}` } })
-  if (result.kind !== 'valid') throw new Error(`not a test item in fixture: ${ids}`)
-  return result.item
+const lineComment = (line: number, body: string) => ({ line, endLine: line, body, style: 'line' as const, hasCodeOnLine: false })
+// The tag is on the line above the test unit, so the test item is at `line`.
+const test = (id: string, path: string, line: number): TestItem => {
+  const [item] = TestFile.of(path, [lineComment(line - 1, `nocap: ${id}`)], [{ line }]).testItems
+  if (item === undefined) throw new Error(`not a test item in fixture: ${id}`)
+  return item
 }
+const specComment = (line: number, body: string) => ({
+  line,
+  body,
+  placement: { kind: 'first-paragraph-end' as const, itemLine: line, text: '' },
+})
 const fromItems = (specItems: SpecItem[], testItems: TestItem[]) =>
   CoverageCheckResult.fromDomain({ coverage: Coverage.of({ specItems, testItems }), invalidTags: [], fileErrors: [] })
 const emptyResult = (data: Partial<Parameters<typeof CoverageCheckResult.of>[0]>) =>
@@ -66,7 +73,7 @@ describe('도메인 결과를 출력 타입으로 바꿈', () => {
     })
 
     it('ID 규칙 위반이면 위치와 규칙을 어긴 ID 후보를 담는다', () => {
-      const { invalidTags } = TestFile.of('a.test.ts', [{ line: 2, comment: { line: 1, body: 'nocap: A.1, B C' } }])
+      const { invalidTags } = TestFile.of('a.test.ts', [lineComment(1, 'nocap: B C')], [{ line: 2 }])
 
       const result = CoverageCheckResult.fromDomain({
         coverage: Coverage.of({ specItems: [], testItems: [] }),
@@ -78,16 +85,13 @@ describe('도메인 결과를 출력 타입으로 바꿈', () => {
         {
           kind: 'id-rule-violation',
           location: { path: 'a.test.ts', line: 1 },
-          invalidCandidates: [
-            { kind: 'invalid-char', value: 'A.1', firstInvalidChar: '.' },
-            { kind: 'invalid-whitespace', value: 'B C' },
-          ],
+          invalidCandidate: { kind: 'invalid-whitespace', value: 'B C' },
         },
       ])
     })
 
-    it('명세 태그의 ID 개수 초과이면 ID 문자열을 담는다', () => {
-      const { invalidTags } = SpecDocument.of('a.md', [{ line: 4, text: '', comment: { line: 4, body: 'nocap: A-001, A-002' } }])
+    it('ID 개수 초과이면 쉼표로 나눈 값들을 담는다', () => {
+      const { invalidTags } = SpecDocument.of('a.md', [specComment(4, 'nocap: A-001, A-002')])
 
       const result = CoverageCheckResult.fromDomain({
         coverage: Coverage.of({ specItems: [], testItems: [] }),
@@ -95,11 +99,11 @@ describe('도메인 결과를 출력 타입으로 바꿈', () => {
         fileErrors: [],
       })
 
-      expect(result.invalidTags).toEqual([{ kind: 'multiple-ids', location: { path: 'a.md', line: 4 }, ids: ['A-001', 'A-002'] }])
+      expect(result.invalidTags).toEqual([{ kind: 'multiple-ids', location: { path: 'a.md', line: 4 }, values: ['A-001', 'A-002'] }])
     })
 
     it('ID 누락이면 위치만 담는다', () => {
-      const { invalidTags } = TestFile.of('a.test.ts', [{ line: 2, comment: { line: 1, body: 'nocap:' } }])
+      const { invalidTags } = TestFile.of('a.test.ts', [lineComment(1, 'nocap:')], [{ line: 2 }])
 
       const result = CoverageCheckResult.fromDomain({
         coverage: Coverage.of({ specItems: [], testItems: [] }),
@@ -108,6 +112,30 @@ describe('도메인 결과를 출력 타입으로 바꿈', () => {
       })
 
       expect(result.invalidTags).toEqual([{ kind: 'missing-id', location: { path: 'a.test.ts', line: 1 } }])
+    })
+
+    it('같은 ID 반복이면 ID 문자열과 첫 태그의 줄을 담는다', () => {
+      const { invalidTags } = TestFile.of('a.test.ts', [lineComment(1, 'nocap: A-001'), lineComment(2, 'nocap: A-001')], [{ line: 3 }])
+
+      const result = CoverageCheckResult.fromDomain({
+        coverage: Coverage.of({ specItems: [], testItems: [] }),
+        invalidTags,
+        fileErrors: [],
+      })
+
+      expect(result.invalidTags).toEqual([{ kind: 'repeated-id', location: { path: 'a.test.ts', line: 2 }, id: 'A-001', firstTagLine: 1 }])
+    })
+
+    it('위치 위반이면 위치와 위치 이유만 담는다', () => {
+      const { invalidTags } = SpecDocument.of('a.md', [{ line: 5, body: 'nocap: A-001', placement: { kind: 'first-block' } }])
+
+      const result = CoverageCheckResult.fromDomain({
+        coverage: Coverage.of({ specItems: [], testItems: [] }),
+        invalidTags,
+        fileErrors: [],
+      })
+
+      expect(result.invalidTags).toEqual([{ kind: 'no-sentence', location: { path: 'a.md', line: 5 } }])
     })
   })
 })
