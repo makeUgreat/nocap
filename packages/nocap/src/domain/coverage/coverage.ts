@@ -4,7 +4,6 @@ import type { SpecItem } from '../spec/spec-item.js'
 import type { TestItem } from '../test/test-item.js'
 import { hasTwoOrMore } from '../../lib/array-length.js'
 
-/** A spec item whose id no other spec item has, and that a test item points to. It is not a problem, so it is only counted. */
 type Covered = { readonly kind: 'covered' }
 type SpecJudgment = Covered | UncoveredSpec | DuplicateId
 

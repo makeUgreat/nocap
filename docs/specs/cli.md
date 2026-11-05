@@ -23,9 +23,16 @@ related:
 - nocap은 커버되지 않은 명세 항목마다 종류 `uncovered-spec`의 진단 1줄을 씀. 위치는 그 명세 항목의 위치이고, 설명에 ID와 명세 문장을 씀. 명세 문장이 빈 문자열이면 ID만 씀 <!-- nocap: CLI-007 -->
 - nocap은 알 수 없는 ID를 가리키는 테스트 항목마다 종류 `unknown-id`의 진단 1줄을 씀. 위치는 그 테스트 항목의 위치임 <!-- nocap: CLI-008 -->
 - nocap은 중복 ID를 가진 명세 항목마다 종류 `duplicate-id`의 진단 1줄을 씀. 설명에 같은 ID를 가진 다른 명세 항목의 위치를 씀 <!-- nocap: CLI-009 -->
-- nocap은 틀린 태그의 규칙을 어긴 ID마다 종류 `invalid-id`의 진단 1줄을 씀. 설명에 그 ID에서 처음 나온 틀린 문자를 씀. 예: `// nocap: A-001, A.1, B.2`는 진단 2줄이 됨 <!-- nocap: CLI-010 -->
+- nocap은 ID 규칙을 어긴 틀린 태그마다 종류 `invalid-id`의 진단 1줄을 씀. 설명에 그 ID에서 처음 나온 틀린 문자를 씀 <!-- nocap: CLI-025 -->
 - nocap은 ID가 누락된 틀린 태그마다 종류 `missing-id`의 진단 1줄을 씀 <!-- nocap: CLI-011 -->
-- nocap은 ID가 2개 이상인 명세 태그마다 종류 `multiple-ids`의 진단 1줄을 씀. 설명에 그 ID들을 씀 <!-- nocap: CLI-013 -->
+- nocap은 ID가 2개 이상인 틀린 태그마다 종류 `multiple-ids`의 진단 1줄을 씀. 설명에 쉼표로 나눈 값 중 빈 값이 아닌 것들을 쓰고, 힌트에 태그 1개에는 ID를 1개만 쓴다고 씀 <!-- nocap: CLI-026 -->
+- nocap은 주석 덩어리 밖의 테스트 태그마다 종류 `not-above-test-call`의 진단 1줄을 씀. 힌트에 태그를 빈 줄 없이 테스트 호출 바로 위에 쓰라고 씀 <!-- nocap: CLI-027 -->
+- nocap은 코드 뒤에 붙은 `nocap:` 라인 주석마다 종류 `after-code`의 진단 1줄을 씀. 힌트에 태그를 테스트 호출 위의 자기 줄에 쓰라고 씀 <!-- nocap: CLI-028 -->
+- nocap은 `nocap:`이 있는 블록 주석마다 종류 `block-comment`의 진단 1줄을 씀. 힌트에 `//` 라인 주석을 쓰라고 씀 <!-- nocap: CLI-029 -->
+- nocap은 주석 덩어리 안에서 반복된 ID의 테스트 태그마다 종류 `repeated-id`의 진단 1줄을 씀. 설명에 그 ID와 같은 ID의 첫 태그가 있는 줄을 씀 <!-- nocap: CLI-030 -->
+- nocap은 리스트 항목 첫 문단의 맨 끝에 있지 않은 명세 태그마다 종류 `not-at-item-end`의 진단 1줄을 씀. 힌트에 태그를 리스트 항목 첫 문단의 끝에 쓰라고 씀 <!-- nocap: CLI-031 -->
+- nocap은 리스트 항목 밖의 명세 태그마다 종류 `outside-list-item`의 진단 1줄을 씀. 힌트에 태그를 리스트 항목의 끝에 쓰라고 씀 <!-- nocap: CLI-032 -->
+- nocap은 명세 문장 없이 명세 태그만 있는 리스트 항목의 명세 태그마다 종류 `no-sentence`의 진단 1줄을 씀. 힌트에 태그 앞에 명세 문장을 쓰라고 씀 <!-- nocap: CLI-033 -->
 - nocap은 파일 오류마다 종류 `read-error`, `unsupported-extension`, `syntax-error` 중 하나의 진단을 씀. 문법 오류는 파서 메시지마다 1줄을 씀 <!-- nocap: CLI-014 -->
 - nocap은 진단을 경로의 코드 단위 순서로 쓰고, 같은 경로 안에서는 줄 순서로 씀. 줄이 없는 진단은 같은 경로의 다른 진단보다 앞에 씀 <!-- nocap: CLI-015 -->
 - nocap은 설명에 사용자가 쓴 값을 큰따옴표로 감싸 씀. 값 안의 `"`와 `\`는 JSON 문자열처럼 이스케이프함 <!-- nocap: CLI-016 -->

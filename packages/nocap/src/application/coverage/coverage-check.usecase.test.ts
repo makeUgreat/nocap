@@ -21,7 +21,13 @@ const fakeReader = (contentByPath: Record<string, string>): FileReader => ({
 })
 
 const fakeSpecParser: SpecDocumentParser = {
-  parse: (content) => content.split('\n').map((body, index) => ({ line: index + 1, text: '', comment: { line: index + 1, body } })),
+  parse: (content) => ({
+    comments: content.split('\n').map((body, index) => ({
+      line: index + 1,
+      body,
+      placement: { kind: 'first-paragraph-end', itemLine: index + 1, text: '' },
+    })),
+  }),
 }
 
 const fakeTestParser: TestFileParser = {
@@ -29,11 +35,15 @@ const fakeTestParser: TestFileParser = {
     if (!path.endsWith('.ts'))
       return { kind: 'unsupported-extension', extension: path.slice(path.lastIndexOf('.')), supportedExtensions: ['.ts'] }
     if (content === SYNTAX_ERROR) return { kind: 'syntax-error', messages: ['unexpected token'] }
-    const sites = content.split('\n').map((body, index) => ({
-      line: 2 * index + 2,
-      comment: { line: 2 * index + 1, body },
+    const bodies = content.split('\n')
+    const comments = bodies.map((body, index) => ({
+      line: 2 * index + 1,
+      endLine: 2 * index + 1,
+      body,
+      style: 'line' as const,
+      hasCodeOnLine: false,
     }))
-    return { kind: 'parsed', sites }
+    return { kind: 'parsed', comments, testUnits: bodies.map((_, index) => ({ line: 2 * index + 2 })) }
   },
 }
 
@@ -189,7 +199,7 @@ describe('틀린 태그', () => {
       {
         kind: 'id-rule-violation',
         location: { path: 'a.md', line: 1 },
-        invalidCandidates: [{ kind: 'invalid-char', value: 'A.1', firstInvalidChar: '.' }],
+        invalidCandidate: { kind: 'invalid-char', value: 'A.1', firstInvalidChar: '.' },
       },
     ])
   })

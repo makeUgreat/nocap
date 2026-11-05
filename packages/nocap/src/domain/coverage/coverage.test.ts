@@ -1,18 +1,22 @@
 import { describe, expect, it } from 'vitest'
 import { Coverage } from './coverage.js'
 import { SpecItem } from '../spec/spec-item.js'
-import { TestItem } from '../test/test-item.js'
+import { TestFile } from '../test/test-file.js'
+import type { TestItem } from '../test/test-item.js'
 
 const spec = (id: string, path = 'a.md'): SpecItem => {
-  const result = SpecItem.parse(path, { line: 1, text: '', comment: { line: 1, body: `nocap: ${id}` } })
+  const result = SpecItem.parse(path, { line: 1, body: `nocap: ${id}`, placement: { kind: 'first-paragraph-end', itemLine: 1, text: '' } })
   if (result.kind !== 'valid') throw new Error(`not a spec item in fixture: ${id}`)
   return result.item
 }
+// `ids` is written like "A-001, A-002". Each id becomes its own test tag line above the test unit.
 const test = (ids: string, path = 'a.test.ts'): TestItem => {
-  const body = `nocap: ${ids}`
-  const result = TestItem.parse(path, { line: 2, comment: { line: 1, body } })
-  if (result.kind !== 'valid') throw new Error(`not a test item in fixture: ${body}`)
-  return result.item
+  const comments = ids
+    .split(', ')
+    .map((id, index) => ({ line: index + 1, endLine: index + 1, body: `nocap: ${id}`, style: 'line' as const, hasCodeOnLine: false }))
+  const [item] = TestFile.of(path, comments, [{ line: comments.length + 1 }]).testItems
+  if (item === undefined) throw new Error(`not a test item in fixture: ${ids}`)
+  return item
 }
 const kindsOf = (coverage: Coverage) => coverage.problems.map((problem) => problem.kind)
 

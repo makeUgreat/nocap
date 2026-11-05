@@ -95,7 +95,7 @@ describe('문제가 없으면 종료 코드 0, 하나라도 있으면 1', () => 
         {
           kind: 'id-rule-violation',
           location: { path: 'a.md', line: 1 },
-          invalidCandidates: [{ kind: 'invalid-char', value: 'A.1', firstInvalidChar: '.' }],
+          invalidCandidate: { kind: 'invalid-char', value: 'A.1', firstInvalidChar: '.' },
         },
       ],
     })

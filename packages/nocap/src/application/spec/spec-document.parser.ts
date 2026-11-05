@@ -1,12 +1,15 @@
-import type { SpecTagSite } from '../../domain/spec/spec-tag-site.boundary.js'
+import type { SpecComment } from '../../domain/spec/spec-comment.boundary.js'
+
+/** Every HTML comment of one spec document in document order. Comments in code are not included. */
+export type SpecDocumentParseResult = {
+  readonly comments: readonly SpecComment[]
+}
 
 export interface SpecDocumentParser {
   /**
-   * Finds the tag sites of the list items in one spec document.
+   * Finds the HTML comments of one spec document.
    *
    * @param content - Full text of the spec document.
-   * @returns The tag sites in the order they appear in the document. Empty when the document has none.
-   * The text of each tag site is the spec sentence: the first paragraph of the list item without the comment, on one line.
    */
-  parse(content: string): SpecTagSite[]
+  parse(content: string): SpecDocumentParseResult
 }

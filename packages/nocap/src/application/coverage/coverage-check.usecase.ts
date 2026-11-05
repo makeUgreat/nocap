@@ -1,8 +1,9 @@
 import { Coverage } from '../../domain/coverage/coverage.js'
 import { SpecDocument } from '../../domain/spec/spec-document.js'
-import type { SpecInvalidTag, SpecItem } from '../../domain/spec/spec-item.js'
+import type { InvalidTag } from '../../domain/spec/invalid-tag.js'
+import type { SpecItem } from '../../domain/spec/spec-item.js'
 import { TestFile } from '../../domain/test/test-file.js'
-import type { TestInvalidTag, TestItem } from '../../domain/test/test-item.js'
+import type { TestItem } from '../../domain/test/test-item.js'
 import type { FileFinder } from '../file/file.finder.js'
 import type { FileReader, FileReadResult } from '../file/file.reader.js'
 import type { SpecDocumentParser } from '../spec/spec-document.parser.js'
@@ -10,19 +11,16 @@ import type { TestFileParser } from '../test/test-file.parser.js'
 import { isNonEmpty } from '../../lib/array-length.js'
 import { CoverageCheckResult, type FileError, type UnmatchedPattern, type UnmatchedPatterns } from './coverage-check.result.js'
 
+/** Glob patterns of the spec documents and of the test files. */
 export type CoverageCheckInput = {
-  /** Glob patterns of the spec documents. */
   readonly specPatterns: readonly [string, ...string[]]
-  /** Glob patterns of the test files. */
   readonly testPatterns: readonly [string, ...string[]]
 }
 
 type ReadAttempt = { readonly path: string; readonly result: FileReadResult }
 type FoundFiles = { readonly paths: readonly string[]; readonly unmatchedPatterns: readonly string[] }
-type FileOutcome<T> =
-  | { readonly kind: 'parsed'; readonly items: readonly T[]; readonly invalidTags: readonly (SpecInvalidTag | TestInvalidTag)[] }
-  | FileError
-type ParsedFiles<T> = { readonly items: T[]; readonly invalidTags: (SpecInvalidTag | TestInvalidTag)[]; readonly fileErrors: FileError[] }
+type FileOutcome<T> = { readonly kind: 'parsed'; readonly items: readonly T[]; readonly invalidTags: readonly InvalidTag[] } | FileError
+type ParsedFiles<T> = { readonly items: T[]; readonly invalidTags: InvalidTag[]; readonly fileErrors: FileError[] }
 
 export class CoverageCheckUsecase {
   constructor(
@@ -65,7 +63,8 @@ export class CoverageCheckUsecase {
   }
 
   private parseSpecDocument(path: string, content: string): FileOutcome<SpecItem> {
-    const document = SpecDocument.of(path, this.specDocumentParser.parse(content))
+    const { comments } = this.specDocumentParser.parse(content)
+    const document = SpecDocument.of(path, comments)
     return { kind: 'parsed', items: document.specItems, invalidTags: document.invalidTags }
   }
 
@@ -73,8 +72,8 @@ export class CoverageCheckUsecase {
     const result = this.testFileParser.parse(path, content)
     switch (result.kind) {
       case 'parsed': {
-        const testFile = TestFile.of(path, result.sites)
-        return { kind: 'parsed', items: testFile.items, invalidTags: testFile.invalidTags }
+        const testFile = TestFile.of(path, result.comments, result.testUnits)
+        return { kind: 'parsed', items: testFile.testItems, invalidTags: testFile.invalidTags }
       }
       case 'unsupported-extension':
         return { kind: 'unsupported-extension', path, extension: result.extension, supportedExtensions: result.supportedExtensions }

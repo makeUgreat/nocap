@@ -39,9 +39,10 @@ describe('실제 파일로 커버리지 검사 실행', () => {
       stdout: [
         'docs/B.md:1: error[uncovered-spec]: "B-001" has no test: 해제',
         'docs/a.md:1: error[uncovered-spec]: "A-001" has no test: 잠금',
+        'docs/a.md:2: error[no-sentence]: spec tag has no spec sentence before it; hint: write the spec sentence before the tag',
         '',
       ].join('\n'),
-      stderr: ['2 errors in 2 files: 2 uncovered-spec', '0 of 2 specs covered', ''].join('\n'),
+      stderr: ['3 errors in 2 files: 2 uncovered-spec, 1 no-sentence', '0 of 2 specs covered', ''].join('\n'),
       exitCode: 1,
     })
   })

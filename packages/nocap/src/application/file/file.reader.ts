@@ -1,14 +1,15 @@
-/** The whole file was read. */
+/** The whole file was read. `content` is decoded as UTF-8. */
 export type FileRead = {
   readonly kind: 'read'
-  /** Full text of the file, decoded as UTF-8. */
   readonly content: string
 }
 
-/** The file could not be read, for example because permission is missing or the file was removed. */
+/**
+ * The file could not be read, for example because permission is missing or the file was removed.
+ * `message` is the error message of the file system.
+ */
 export type FileReadError = {
   readonly kind: 'read-error'
-  /** Error message reported by the file system. */
   readonly message: string
 }
 

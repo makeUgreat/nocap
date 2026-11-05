@@ -1,50 +1,38 @@
-import { isNonEmpty } from '../../lib/array-length.js'
-import { IdCandidates, type MissingId, type NotTag } from '../shared/id-candidates.js'
-import { type InvalidIdCandidate, SpecId } from './spec-id.js'
+import type { VocabularyReason } from './invalid-tag.js'
+import { SpecId } from './spec-id.js'
+import { hasTwoOrMore, isNonEmpty } from '../../lib/array-length.js'
 
-/** One or more id candidates of a tag broke the id rule. Each one appears once. */
-type IdRuleViolation = {
-  readonly kind: 'id-rule-violation'
-  readonly invalidCandidates: readonly [InvalidIdCandidate, ...InvalidIdCandidate[]]
-}
-/** Why a comment body that starts with "nocap:" did not become a tag. */
-export type InvalidTagReason = MissingId | IdRuleViolation
+const PREFIX = 'nocap:'
 
-/** The body is a tag whose ids all passed the id rule. */
+export type NotTag = { readonly kind: 'not-tag' }
 type ValidTag = { readonly kind: 'valid'; readonly tag: Tag }
 
 export class Tag {
-  private constructor(readonly ids: readonly [SpecId, ...SpecId[]]) {}
+  private constructor(readonly id: SpecId) {}
 
-  static parse(body: string): NotTag | InvalidTagReason | ValidTag {
-    const result = IdCandidates.parse(body)
-
-    switch (result.kind) {
-      case 'not-tag':
-      case 'missing-id':
-        return result
-      case 'candidates':
-        return Tag.fromCandidates(result.candidates)
+  static parse(body: string): NotTag | VocabularyReason | ValidTag {
+    const trimmed = body.trim()
+    if (!trimmed.startsWith(PREFIX)) {
+      return { kind: 'not-tag' }
     }
+
+    const candidate = trimmed.slice(PREFIX.length).trim()
+    if (candidate === '') {
+      return { kind: 'missing-id' }
+    }
+
+    const values = candidate
+      .split(',')
+      .map((value) => value.trim())
+      .filter((value) => value !== '')
+    if (isNonEmpty(values) && hasTwoOrMore(values)) {
+      return { kind: 'multiple-ids', values }
+    }
+
+    const result = SpecId.parse(candidate)
+    if (result.kind !== 'valid') {
+      return { kind: 'id-rule-violation', invalidCandidate: result }
+    }
+    return { kind: 'valid', tag: new Tag(result.id) }
   }
-
-  private static fromCandidates(candidates: IdCandidates): IdRuleViolation | ValidTag {
-    const results = candidates.values.map((candidate) => SpecId.parse(candidate))
-
-    const invalidCandidates = withoutDuplicates(results.filter((result) => result.kind !== 'valid'))
-    if (isNonEmpty(invalidCandidates)) {
-      return { kind: 'id-rule-violation', invalidCandidates }
-    }
-
-    const ids = results.flatMap((result) => (result.kind === 'valid' ? [result.id] : []))
-    if (!isNonEmpty(ids)) {
-      throw new Error('Id candidates with no invalid one must give at least one id')
-    }
-
-    return { kind: 'valid', tag: new Tag(ids) }
-  }
-}
-
-function withoutDuplicates(invalidCandidates: readonly InvalidIdCandidate[]): InvalidIdCandidate[] {
-  return invalidCandidates.filter((invalid, index) => invalidCandidates.findIndex((other) => other.value === invalid.value) === index)
 }

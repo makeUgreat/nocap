@@ -9,7 +9,8 @@ describe('계정 잠금', () => {
     expect(lock(5)).toBe(true)
   })
 
-  // nocap: A-003, A-004
+  // nocap: A-003
+  // nocap: A-004
   it.each([1, 2])('%i회 실패하면 잠그지 않는다', (count) => {
     expect(lock(count)).toBe(false)
   })

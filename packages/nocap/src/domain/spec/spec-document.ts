@@ -1,17 +1,18 @@
-import { SpecItem, type SpecInvalidTag } from './spec-item.js'
-import type { SpecTagSite } from './spec-tag-site.boundary.js'
+import type { SpecComment } from './spec-comment.boundary.js'
+import type { InvalidTag } from './invalid-tag.js'
+import { SpecItem } from './spec-item.js'
 
 export class SpecDocument {
   private constructor(
     readonly specItems: readonly SpecItem[],
-    readonly invalidTags: readonly SpecInvalidTag[],
+    readonly invalidTags: readonly InvalidTag[],
   ) {}
 
-  static of(path: string, sites: readonly SpecTagSite[]): SpecDocument {
+  static of(path: string, comments: readonly SpecComment[]): SpecDocument {
     const specItems: SpecItem[] = []
-    const invalidTags: SpecInvalidTag[] = []
-    for (const site of sites) {
-      const result = SpecItem.parse(path, site)
+    const invalidTags: InvalidTag[] = []
+    for (const comment of comments) {
+      const result = SpecItem.parse(path, comment)
       switch (result.kind) {
         case 'not-tag':
           break
