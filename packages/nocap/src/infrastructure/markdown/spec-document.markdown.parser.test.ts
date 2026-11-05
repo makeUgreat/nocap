@@ -3,7 +3,10 @@ import { SpecDocument } from '../../domain/spec/spec-document.js'
 import { SpecDocumentMarkdownParser } from './spec-document.markdown.parser.js'
 
 const parser = new SpecDocumentMarkdownParser()
-const documentOf = (path: string, content: string) => SpecDocument.of(path, parser.parse(content))
+const documentOf = (path: string, content: string) => {
+  const { comments } = parser.parse(content)
+  return SpecDocument.of(path, comments)
+}
 const ids = (content: string) => documentOf('a.md', content).specItems.map((item) => item.id.value)
 const parse = (content: string) => documentOf('docs/a.md', content)
 const textOf = (content: string) => parse(content).specItems[0]?.text
@@ -94,13 +97,6 @@ describe('주석 안쪽 앞뒤와 콜론 뒤 공백과 무관하게 명세 태�
   })
 })
 
-// nocap: MD-017
-describe('ID 뒤의 쉼표와 무관하게 명세 태그 인식', () => {
-  it('ID 뒤에 쉼표가 있어도 쉼표가 없을 때와 같은 ID를 반환한다', () => {
-    expect(ids('- 계정을 잠금 <!-- nocap: A-001, -->')).toEqual(['A-001'])
-  })
-})
-
 // nocap: MD-005
 describe('코드 안의 명세 태그 무시', () => {
   it('인라인 코드 안의 명세 태그는 명세 태그로 보지 않는다', () => {
@@ -154,8 +150,6 @@ describe('리스트 항목의 첫 문단 끝을 맨 끝으로 봄', () => {
 
     expect(ids(content)).toEqual([])
   })
-
-  it.todo('명세 태그를 첫 문단 다음 줄에 따로 쓰면 위치가 틀린 태그로 보고한다')
 })
 
 describe('빈 항목', () => {
@@ -239,24 +233,39 @@ describe('ID 규칙을 어긴 명세 태그로는 명세 항목을 만들지 않
   })
 })
 
-// nocap: MD-018
+// nocap: MD-023
 describe('ID가 누락된 명세 태그로는 명세 항목을 만들지 않음', () => {
   it('nocap: 뒤에 ID가 없는 명세 태그는 명세 항목이 되지 않는다', () => {
     expect(ids('- 잠금 <!-- nocap: -->')).toEqual([])
   })
-
-  it('쉼표 사이가 빈 명세 태그는 명세 항목이 되지 않는다', () => {
-    expect(ids('- 잠금 <!-- nocap: A-001,,A-002 -->')).toEqual([])
-  })
 })
 
-// nocap: MD-019
+// nocap: MD-022
+describe('ID 뒤에 쉼표가 있는 명세 태그로는 명세 항목을 만들지 않음', () => {
+  it('ID 뒤에 쉼표가 1개 있는 명세 태그는 명세 항목이 되지 않는다', () => {
+    expect(ids('- 잠금 <!-- nocap: A-001, -->')).toEqual([])
+  })
+
+  it('ID 뒤에 쉼표가 1개 있으면 쉼표를 틀린 문자로 보고한다', () => {
+    expect(parse('- 잠금 <!-- nocap: A-001, -->').invalidTags).toEqual([
+      {
+        kind: 'id-rule-violation',
+        location: { path: 'docs/a.md', line: 1 },
+        invalidCandidate: { kind: 'invalid-char', value: 'A-001,', firstInvalidChar: ',' },
+      },
+    ])
+  })
+})
+// nocap: MD-024
 describe('ID가 2개 이상인 명세 태그로는 명세 항목을 만들지 않음', () => {
   it('ID가 2개인 명세 태그는 명세 항목이 되지 않는다', () => {
     expect(ids('- 잠금 <!-- nocap: A-001, A-002 -->')).toEqual([])
   })
-})
 
+  it('쉼표 사이가 비어 있어도 빈 값이 아닌 값이 2개이면 ID 개수 초과로 보고한다', () => {
+    expect(parse('- 잠금 <!-- nocap: A-001,,A-002 -->').invalidTags.map((invalidTag) => invalidTag.kind)).toEqual(['multiple-ids'])
+  })
+})
 // nocap: MD-015
 describe('틀린 명세 태그의 위치와 틀린 이유를 보고', () => {
   it('ID 규칙을 어긴 명세 태그가 있으면 태그가 있는 줄과 규칙을 어긴 ID를 반환한다', () => {
@@ -266,7 +275,7 @@ describe('틀린 명세 태그의 위치와 틀린 이유를 보고', () => {
       {
         kind: 'id-rule-violation',
         location: { path: 'docs/a.md', line: 3 },
-        invalidCandidates: [{ kind: 'invalid-char', value: 'A.1', firstInvalidChar: '.' }],
+        invalidCandidate: { kind: 'invalid-char', value: 'A.1', firstInvalidChar: '.' },
       },
     ])
   })
@@ -275,9 +284,9 @@ describe('틀린 명세 태그의 위치와 틀린 이유를 보고', () => {
     expect(parse('- 잠금 <!-- nocap: -->').invalidTags).toEqual([{ kind: 'missing-id', location: { path: 'docs/a.md', line: 1 } }])
   })
 
-  it('ID가 2개인 명세 태그가 있으면 태그가 있는 줄과 그 ID들을 반환한다', () => {
+  it('ID가 2개인 명세 태그가 있으면 태그가 있는 줄과 쉼표로 나눈 값들을 반환한다', () => {
     expect(parse('- 잠금 <!-- nocap: A-001, A-002 -->').invalidTags).toEqual([
-      { kind: 'multiple-ids', location: { path: 'docs/a.md', line: 1 }, ids: [{ value: 'A-001' }, { value: 'A-002' }] },
+      { kind: 'multiple-ids', location: { path: 'docs/a.md', line: 1 }, values: ['A-001', 'A-002'] },
     ])
   })
 
@@ -295,19 +304,91 @@ describe('명세 태그가 시작하는 줄을 틀린 명세 태그의 위치로
   })
 })
 
-// nocap: MD-020
+// nocap: MD-025
 describe('틀린 명세 태그 1개에 틀린 이유 1개를 정해진 순서로 보고', () => {
   const kindsOf = (content: string) => parse(content).invalidTags.map((invalidTag) => invalidTag.kind)
 
-  it('ID 누락과 ID 개수 초과를 함께 어기면 ID 누락만 보고한다', () => {
-    expect(kindsOf('- 잠금 <!-- nocap: A-001,,A-002 -->')).toEqual(['missing-id'])
+  it('위치 위반과 ID 규칙 위반을 함께 어기면 위치 위반만 보고한다', () => {
+    expect(kindsOf('- <!-- nocap: A.1 --> 잠금')).toEqual(['not-at-item-end'])
   })
 
-  it('ID 누락과 ID 규칙 위반을 함께 어기면 ID 누락만 보고한다', () => {
-    expect(kindsOf('- 잠금 <!-- nocap: A.1,, -->')).toEqual(['missing-id'])
+  it('ID 규칙 위반과 ID 개수 초과를 함께 어기면 ID 개수 초과만 보고한다', () => {
+    expect(kindsOf('- 잠금 <!-- nocap: A.1, B -->')).toEqual(['multiple-ids'])
+  })
+})
+
+// nocap: MD-026
+describe('리스트 항목 첫 문단의 맨 끝에 있지 않은 명세 태그를 보고', () => {
+  const misplacedOf = (content: string) => parse(content).invalidTags
+
+  it('명세 태그가 텍스트 맨 앞에 있으면 그 줄에 리스트 항목 끝이 아님을 보고한다', () => {
+    expect(misplacedOf('- <!-- nocap: A-001 --> 잠금')).toEqual([{ kind: 'not-at-item-end', location: { path: 'docs/a.md', line: 1 } }])
   })
 
-  it('ID 규칙 위반과 ID 개수 초과를 함께 어기면 ID 규칙 위반만 보고한다', () => {
-    expect(kindsOf('- 잠금 <!-- nocap: A.1, A-002 -->')).toEqual(['id-rule-violation'])
+  it('명세 태그가 둘째 문단 끝에 있으면 리스트 항목 끝이 아님을 보고한다', () => {
+    const content = ['- 계정을 잠금', '', '  관리자에게도 적용함 <!-- nocap: A-001 -->'].join('\n')
+
+    expect(misplacedOf(content)).toEqual([{ kind: 'not-at-item-end', location: { path: 'docs/a.md', line: 3 } }])
+  })
+
+  it('명세 태그를 첫 문단 다음 줄에 따로 쓰면 그 줄에 리스트 항목 끝이 아님을 보고한다', () => {
+    expect(misplacedOf(['- 계정을 잠금', '  <!-- nocap: A-001 -->'].join('\n'))).toEqual([
+      { kind: 'not-at-item-end', location: { path: 'docs/a.md', line: 2 } },
+    ])
+  })
+
+  it('첫 문단 끝에 명세 태그가 2개이면 앞의 태그만 보고하고 맨 끝의 태그로 명세 항목을 만든다', () => {
+    const document = parse('- 잠금 <!-- nocap: A-001 --> <!-- nocap: A-002 -->')
+
+    expect([document.specItems.map((item) => item.id.value), document.invalidTags.map((invalidTag) => invalidTag.kind)]).toEqual([
+      ['A-002'],
+      ['not-at-item-end'],
+    ])
+  })
+
+  it('맨 끝이 아닌 자리의 주석이 nocap:으로 시작하지 않으면 보고하지 않는다', () => {
+    expect(misplacedOf('- <!-- TODO --> 잠금')).toEqual([])
+  })
+})
+
+// nocap: MD-027
+describe('리스트 항목 밖의 명세 태그를 보고', () => {
+  const kindsOf = (content: string) => parse(content).invalidTags.map((invalidTag) => invalidTag.kind)
+
+  it('헤딩 끝의 명세 태그는 그 줄에 리스트 항목 밖임을 보고한다', () => {
+    expect(parse('# 잠금 <!-- nocap: A-001 -->').invalidTags).toEqual([
+      { kind: 'outside-list-item', location: { path: 'docs/a.md', line: 1 } },
+    ])
+  })
+
+  it('문단 끝의 명세 태그는 리스트 항목 밖임을 보고한다', () => {
+    expect(kindsOf('계정을 잠금 <!-- nocap: A-001 -->')).toEqual(['outside-list-item'])
+  })
+
+  it('표 안의 명세 태그는 리스트 항목 밖임을 보고한다', () => {
+    expect(kindsOf(['| a |', '|---|', '| 잠금 <!-- nocap: A-001 --> |'].join('\n'))).toEqual(['outside-list-item'])
+  })
+
+  it('한 HTML 블록 안의 명세 태그 2개는 각각 그 줄에 보고한다', () => {
+    const content = ['<div>', '<!-- nocap: A-001 -->', '<!-- nocap: A-002 -->', '</div>'].join('\n')
+
+    expect(parse(content).invalidTags.map((invalidTag) => invalidTag.location.line)).toEqual([2, 3])
+  })
+
+  it('코드 블록 안의 명세 태그는 보고하지 않는다', () => {
+    expect(kindsOf(['```md', '<!-- nocap: A-001 -->', '```'].join('\n'))).toEqual([])
+  })
+})
+
+// nocap: MD-028
+describe('명세 문장 없이 명세 태그만 있는 리스트 항목의 명세 태그를 보고', () => {
+  it('명세 태그만 있는 리스트 항목이면 그 줄에 명세 문장 없음을 보고한다', () => {
+    expect(parse('- <!-- nocap: A-001 -->').invalidTags).toEqual([{ kind: 'no-sentence', location: { path: 'docs/a.md', line: 1 } }])
+  })
+
+  it('명세 태그만 있는 항목의 하위 항목은 명세 문장 없음으로 보고하지 않는다', () => {
+    const content = ['- <!-- nocap: A-001 -->', '  - 5회 실패하면 잠금 <!-- nocap: A-002 -->'].join('\n')
+
+    expect(parse(content).invalidTags.map((invalidTag) => invalidTag.location.line)).toEqual([1])
   })
 })
