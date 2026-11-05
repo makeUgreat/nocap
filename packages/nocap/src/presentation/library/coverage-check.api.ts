@@ -6,7 +6,14 @@ import type { Location as DomainLocation } from '../../domain/shared/location.js
 import type { InvalidTag as DomainInvalidTag } from '../../domain/spec/invalid-tag.js'
 import type { InvalidIdCandidate as DomainInvalidIdCandidate } from '../../domain/spec/spec-id.js'
 import { isNonEmpty, mapNonEmpty, mapTwoOrMore } from '../../lib/array-length.js'
+import type { Equals } from '../../lib/type-equality.js'
 import type * as Public from './coverage-check.public.js'
+
+// These inner types are passed to the result as they are, because each has the same type as its public type.
+// When an inner type changes, its check stops compiling. Then map that type field by field, or change the public type.
+true satisfies Equals<Usecase.FileError, Public.FileError>
+true satisfies Equals<Usecase.UnmatchedPattern, Public.UnmatchedPattern>
+true satisfies Equals<DomainInvalidIdCandidate, Public.InvalidIdCandidate>
 
 type CoverageCheck = { run(input: UsecaseInput): Promise<Usecase.CoverageCheckResult> }
 
@@ -25,12 +32,12 @@ export class CoverageCheckApi {
           coveredSpecCount: coverage.coveredSpecCount,
           coverageProblems: coverage.problems.map(toCoverageProblem),
           invalidTags: invalidTags.map(toInvalidTag),
-          fileErrors: fileErrors.map(toFileError),
+          fileErrors,
           specItems: coverage.specJudgments.map(toSpecItem),
         }
       }
       case 'unmatched-patterns':
-        return { kind: 'unmatched-patterns', patterns: mapNonEmpty(result.patterns, toUnmatchedPattern) }
+        return { kind: 'unmatched-patterns', patterns: result.patterns }
     }
   }
 }
@@ -110,7 +117,7 @@ function toInvalidTag(invalidTag: DomainInvalidTag): Public.InvalidTag {
     case 'multiple-ids':
       return { kind: 'multiple-ids', location, values: invalidTag.values }
     case 'id-rule-violation':
-      return { kind: 'id-rule-violation', location, invalidCandidate: toInvalidIdCandidate(invalidTag.invalidCandidate) }
+      return { kind: 'id-rule-violation', location, invalidCandidate: invalidTag.invalidCandidate }
     case 'block-comment':
       return { kind: 'block-comment', location }
     case 'no-sentence':
@@ -122,35 +129,6 @@ function toInvalidTag(invalidTag: DomainInvalidTag): Public.InvalidTag {
     case 'repeated-id':
       return { kind: 'repeated-id', location, id: invalidTag.id.value, firstTagLine: invalidTag.firstTagLine }
   }
-}
-
-function toInvalidIdCandidate(candidate: DomainInvalidIdCandidate): Public.InvalidIdCandidate {
-  switch (candidate.kind) {
-    case 'invalid-whitespace':
-      return { kind: 'invalid-whitespace', value: candidate.value }
-    case 'invalid-char':
-      return { kind: 'invalid-char', value: candidate.value, firstInvalidChar: candidate.firstInvalidChar }
-  }
-}
-
-function toFileError(fileError: Usecase.FileError): Public.FileError {
-  switch (fileError.kind) {
-    case 'read-error':
-      return { kind: 'read-error', path: fileError.path, message: fileError.message }
-    case 'unsupported-extension':
-      return {
-        kind: 'unsupported-extension',
-        path: fileError.path,
-        extension: fileError.extension,
-        supportedExtensions: fileError.supportedExtensions,
-      }
-    case 'syntax-error':
-      return { kind: 'syntax-error', path: fileError.path, messages: fileError.messages }
-  }
-}
-
-function toUnmatchedPattern({ side, pattern }: Usecase.UnmatchedPattern): Public.UnmatchedPattern {
-  return { side, pattern }
 }
 
 function toLocation(location: DomainLocation): Public.Location {

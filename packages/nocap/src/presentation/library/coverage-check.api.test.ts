@@ -305,12 +305,4 @@ describe('유스케이스 결과를 공개 타입으로 바꿈', () => {
       ],
     })
   })
-
-  it('유스케이스 결과에 공개 타입에 없는 필드가 있어도 공개 결과에 담지 않는다', async () => {
-    const withExtraField = { kind: 'read-error', path: 'a.md', message: 'EACCES', internal: 1 } as UsecaseFileError
-
-    const result = await checkedPublicOf(checkedOf({ fileErrors: [withExtraField] }))
-
-    expect(result.fileErrors).toStrictEqual([{ kind: 'read-error', path: 'a.md', message: 'EACCES' }])
-  })
 })
