@@ -1,14 +1,15 @@
-import type { NotTag } from '../shared/id-candidates.js'
 import { Location } from '../shared/location.js'
-import type { TagSite } from '../shared/tag-site.boundary.js'
+import type { SpecId } from '../spec/spec-id.js'
 import { SpecIds } from '../spec/spec-ids.js'
-import { type InvalidTagReason, Tag } from '../spec/tag.js'
+import type { FormReason, InvalidTag, InvalidTagReason } from '../spec/invalid-tag.js'
+import { type NotTag, Tag } from '../spec/tag.js'
+import type { CommentsAboveTestUnit, MisplacedTestComment } from './comments-above-test-unit.js'
+import type { TestComment } from './test-comment.boundary.js'
+import { isNonEmpty } from '../../lib/array-length.js'
 
-/** A test tag that broke a rule, at the line of the tag. */
-export type TestInvalidTag = InvalidTagReason & { readonly location: Location }
+const BLOCK_LINE_START = /^[\s*]+/u
 
-/** The comment of the tag site is a valid test tag, so the test call became a test item. */
-type ValidTestItem = { readonly kind: 'valid'; readonly item: TestItem }
+type ParsedRun = { readonly item: TestItem | undefined; readonly invalidTags: readonly InvalidTag[] }
 
 export class TestItem {
   private constructor(
@@ -16,25 +17,55 @@ export class TestItem {
     readonly location: Location,
   ) {}
 
-  static parse(path: string, site: TagSite): NotTag | TestInvalidTag | ValidTestItem {
-    const result = Tag.parse(site.comment.body)
+  static parse(path: string, run: CommentsAboveTestUnit): ParsedRun {
+    const ids: SpecId[] = []
+    const firstTagLines = new Map<string, number>()
+    const invalidTags: InvalidTag[] = []
 
-    switch (result.kind) {
-      case 'not-tag':
-        return result
-      case 'missing-id':
-      case 'id-rule-violation':
-        return invalid(result, path, site.comment)
-      case 'valid':
-        return TestItem.fromTag(result.tag, path, site)
+    for (const comment of run.comments) {
+      const result = TestItem.tagOf(comment)
+      if (result.kind === 'not-tag') continue
+      if (result.kind !== 'valid') {
+        invalidTags.push(invalid(result, path, comment))
+        continue
+      }
+
+      const { id } = result.tag
+      const firstTagLine = firstTagLines.get(id.key)
+      if (firstTagLine !== undefined) {
+        invalidTags.push(invalid({ kind: 'repeated-id', id, firstTagLine }, path, comment))
+        continue
+      }
+      firstTagLines.set(id.key, comment.line)
+      ids.push(id)
     }
+
+    const item = isNonEmpty(ids) ? new TestItem(SpecIds.of(ids), Location.of(path, run.unitLine)) : undefined
+    return { item, invalidTags }
   }
 
-  private static fromTag(tag: Tag, path: string, { line }: TagSite): ValidTestItem {
-    return { kind: 'valid', item: new TestItem(SpecIds.of(tag.ids), Location.of(path, line)) }
+  static misplaced(path: string, { kind, comment }: MisplacedTestComment): NotTag | InvalidTag {
+    if (TestItem.tagOf(comment).kind === 'not-tag') return { kind: 'not-tag' }
+    return invalid({ kind }, path, comment)
+  }
+
+  private static tagOf(comment: TestComment): ReturnType<typeof Tag.parse> | FormReason {
+    if (comment.style === 'line') return Tag.parse(comment.body)
+    return tagLineIndexOf(comment.body) === undefined ? { kind: 'not-tag' } : { kind: 'block-comment' }
   }
 }
 
-function invalid(reason: InvalidTagReason, path: string, comment: TagSite['comment']): TestInvalidTag {
-  return { ...reason, location: Location.of(path, comment.line) }
+function tagLineIndexOf(blockBody: string): number | undefined {
+  const index = blockBody.split(/\r\n|\r|\n/u).findIndex((bodyLine) => Tag.parse(bodyLine.replace(BLOCK_LINE_START, '')).kind !== 'not-tag')
+  return index === -1 ? undefined : index
+}
+
+// A block comment can span lines, so its tag is on the first of its lines that starts with "nocap:".
+function tagLineOf(comment: TestComment): number {
+  if (comment.style === 'line') return comment.line
+  return comment.line + (tagLineIndexOf(comment.body) ?? 0)
+}
+
+function invalid(reason: InvalidTagReason, path: string, comment: TestComment): InvalidTag {
+  return { ...reason, location: Location.of(path, tagLineOf(comment)) }
 }

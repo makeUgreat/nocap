@@ -1,21 +1,9 @@
-import type { NotTag } from '../shared/id-candidates.js'
 import { Location } from '../shared/location.js'
-import type { TagSite } from '../shared/tag-site.boundary.js'
 import type { SpecId } from './spec-id.js'
-import type { SpecTagSite } from './spec-tag-site.boundary.js'
-import { type InvalidTagReason, Tag } from './tag.js'
-import { hasTwoOrMore } from '../../lib/array-length.js'
+import type { InvalidTag, InvalidTagReason } from './invalid-tag.js'
+import type { SpecComment } from './spec-comment.boundary.js'
+import { type NotTag, Tag } from './tag.js'
 
-/** A spec tag has two or more ids. Only spec tags have this reason. */
-type MultipleIds = { readonly kind: 'multiple-ids'; readonly ids: readonly [SpecId, SpecId, ...SpecId[]] }
-
-/** Why a comment body that starts with "nocap:" did not become a spec tag. */
-type SpecInvalidTagReason = InvalidTagReason | MultipleIds
-
-/** A spec tag that broke a rule, at the line where the tag starts. */
-export type SpecInvalidTag = SpecInvalidTagReason & { readonly location: Location }
-
-/** The comment of the tag site is a valid spec tag, so the list item became a spec item. */
 type ValidSpecItem = { readonly kind: 'valid'; readonly item: SpecItem }
 
 export class SpecItem {
@@ -25,28 +13,28 @@ export class SpecItem {
     readonly text: string,
   ) {}
 
-  static parse(path: string, site: SpecTagSite): NotTag | SpecInvalidTag | ValidSpecItem {
-    const result = Tag.parse(site.comment.body)
+  static parse(path: string, comment: SpecComment): NotTag | InvalidTag | ValidSpecItem {
+    const result = Tag.parse(comment.body)
+    if (result.kind === 'not-tag') return result
 
-    switch (result.kind) {
-      case 'not-tag':
-        return result
-      case 'missing-id':
-      case 'id-rule-violation':
-        return invalid(result, path, site.comment)
-      case 'valid':
-        return SpecItem.fromTag(result.tag, path, site)
-    }
-  }
+    const { placement } = comment
+    switch (placement.kind) {
+      case 'first-block':
+        return invalid({ kind: 'no-sentence' }, path, comment)
+      case 'elsewhere-in-item':
+        return invalid({ kind: 'not-at-item-end' }, path, comment)
+      case 'outside-item':
+        return invalid({ kind: 'outside-list-item' }, path, comment)
+      case 'first-paragraph-end':
+        if (result.kind !== 'valid') {
+          return invalid(result, path, comment)
+        }
 
-  private static fromTag(tag: Tag, path: string, { line, text, comment }: SpecTagSite): SpecInvalidTag | ValidSpecItem {
-    if (hasTwoOrMore(tag.ids)) {
-      return invalid({ kind: 'multiple-ids', ids: tag.ids }, path, comment)
+        return { kind: 'valid', item: new SpecItem(result.tag.id, Location.of(path, placement.itemLine), placement.text) }
     }
-    return { kind: 'valid', item: new SpecItem(tag.ids[0], Location.of(path, line), text) }
   }
 }
 
-function invalid(reason: SpecInvalidTagReason, path: string, comment: TagSite['comment']): SpecInvalidTag {
+function invalid(reason: InvalidTagReason, path: string, comment: SpecComment): InvalidTag {
   return { ...reason, location: Location.of(path, comment.line) }
 }

@@ -1,28 +1,11 @@
-/** One character that the id rule allows: A-Z, a-z, 0-9, "-" or "_". */
 const ID_CHAR = /^[A-Za-z0-9_-]$/u
 const WHITESPACE = /^\s$/u
 
-/** The candidate passed the id rule. */
 type ValidSpecId = { readonly kind: 'valid'; readonly id: SpecId }
 
-/**
- * An id candidate that broke the id rule, with the reason taken from the first character the rule does not allow.
- *
- * @remarks
- * `invalid-whitespace`: the first such character is a whitespace. Ids written without a comma between them give this reason.
- * `invalid-char`: the first such character is any other character.
- */
 export type InvalidIdCandidate =
-  | {
-      readonly kind: 'invalid-whitespace'
-      readonly value: string
-    }
-  | {
-      readonly kind: 'invalid-char'
-      readonly value: string
-      /** The first character in the candidate that the id rule does not allow. */
-      readonly firstInvalidChar: string
-    }
+  | { readonly kind: 'invalid-whitespace'; readonly value: string }
+  | { readonly kind: 'invalid-char'; readonly value: string; readonly firstInvalidChar: string }
 
 export class SpecId {
   private constructor(readonly value: string) {}
