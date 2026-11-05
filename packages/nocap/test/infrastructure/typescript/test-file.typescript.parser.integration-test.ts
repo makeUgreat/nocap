@@ -54,7 +54,7 @@ describe('실제 TypeScript 파일의 주석과 테스트 단위', () => {
   it('쌓은 태그가 섞인 파일이면 틀린 태그 없이 테스트 항목을 만든다', () => {
     const testFile = testFileOf('success.ts')
 
-    expect([testFile.testItems.map((item) => item.ids.values.map((id) => id.value)), testFile.invalidTags]).toEqual([
+    expect([testFile.testItems.map((item) => item.ids.map((id) => id.value)), testFile.invalidTags]).toEqual([
       [['A-001'], ['A-002'], ['A-003', 'A-004'], ['A-005'], ['B-001']],
       [],
     ])

@@ -38,7 +38,7 @@ export class Coverage {
 
   static of({ specItems, testItems }: { readonly specItems: readonly SpecItem[]; readonly testItems: readonly TestItem[] }): Coverage {
     const specGroups = groupById(specItems, (specItem) => [specItem.id])
-    const testGroups = groupById(testItems, (testItem) => testItem.ids.values)
+    const testGroups = groupById(testItems, (testItem) => testItem.ids)
 
     const specJudgments = specItems.map((specItem) => Coverage.judgeSpecItem(specItem, specGroups, testGroups))
     const problems = [...Coverage.specProblemsOf(specJudgments), ...Coverage.unknownIdsOf(testGroups, specGroups)]

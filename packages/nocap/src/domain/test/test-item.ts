@@ -1,6 +1,5 @@
 import { Location } from '../shared/location.js'
 import type { SpecId } from '../spec/spec-id.js'
-import { SpecIds } from '../spec/spec-ids.js'
 import type { FormReason, InvalidTag, InvalidTagReason } from '../spec/invalid-tag.js'
 import { type NotTag, Tag } from '../spec/tag.js'
 import type { CommentsAboveTestUnit, MisplacedTestComment } from './comments-above-test-unit.js'
@@ -13,7 +12,7 @@ type ParsedRun = { readonly item: TestItem | undefined; readonly invalidTags: re
 
 export class TestItem {
   private constructor(
-    readonly ids: SpecIds,
+    readonly ids: readonly [SpecId, ...SpecId[]],
     readonly location: Location,
   ) {}
 
@@ -40,7 +39,7 @@ export class TestItem {
       ids.push(id)
     }
 
-    const item = isNonEmpty(ids) ? new TestItem(SpecIds.of(ids), Location.of(path, run.unitLine)) : undefined
+    const item = isNonEmpty(ids) ? new TestItem(ids, Location.of(path, run.unitLine)) : undefined
     return { item, invalidTags }
   }
 
