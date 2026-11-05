@@ -55,7 +55,6 @@ export class Coverage {
   }
 
   private static specProblemsOf(specJudgments: readonly SpecJudgment[]): (UncoveredSpec | DuplicateId)[] {
-    const reportedIds = new Set<string>()
     return specJudgments.flatMap((judgment): (UncoveredSpec | DuplicateId)[] => {
       switch (judgment.kind) {
         case 'covered':
@@ -63,10 +62,9 @@ export class Coverage {
         case 'uncovered-spec':
           return [{ kind: 'uncovered-spec', specItem: judgment.specItem }]
         case 'duplicate-id': {
-          const { id } = judgment.specItem
-          if (reportedIds.has(id.key)) return []
-          reportedIds.add(id.key)
-          return [{ kind: 'duplicate-id', id, specItems: judgment.specItems }]
+          const [first] = judgment.specItems
+          if (first !== judgment.specItem) return []
+          return [{ kind: 'duplicate-id', id: first.id, specItems: judgment.specItems }]
         }
       }
     })
