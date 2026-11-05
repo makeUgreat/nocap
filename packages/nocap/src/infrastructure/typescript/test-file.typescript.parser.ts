@@ -47,7 +47,7 @@ export class TestFileTypescriptParser implements TestFileParser {
 function testUnitsOf(program: Program, lineIndex: LineIndex): TestUnit[] {
   return [...outermostCallsByLine(program, lineIndex)]
     .filter(([, call]) => isTestCall(call))
-    .map(([line]) => ({ line }))
+    .map(([line, call]) => ({ line, endLine: lineIndex.lineOf(call.end) }))
     .sort((a, b) => a.line - b.line)
 }
 

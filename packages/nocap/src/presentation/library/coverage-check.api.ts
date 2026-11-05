@@ -105,7 +105,10 @@ function toSpecItem(judgment: DomainSpecJudgment): Public.SpecItem {
     text: specItem.text,
     location: toLocation(specItem.location),
     status: judgment.kind,
-    testItems: judgment.kind === 'covered' ? judgment.testItems.map((testItem) => ({ location: toLocation(testItem.location) })) : [],
+    testItems:
+      judgment.kind === 'covered'
+        ? judgment.testItems.map((testItem) => ({ location: toLocation(testItem.location), endLine: testItem.endLine }))
+        : [],
   }
 }
 

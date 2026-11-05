@@ -17,9 +17,10 @@ export type Location = {
   readonly line: number
 }
 
-/** A test item that points to the id of a spec item. `location` is the line where the test unit, such as an `it()` call, starts. */
+/** A test item that points to the id of a spec item. `location` is the line where the test unit, such as an `it()` call, starts, and `endLine` is the line where it ends. */
 export type TestItem = {
   readonly location: Location
+  readonly endLine: number
 }
 
 /**

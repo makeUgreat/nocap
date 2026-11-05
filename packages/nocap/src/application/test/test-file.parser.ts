@@ -6,7 +6,7 @@ import type { TestUnit } from '../../domain/test/test-unit.boundary.js'
  *
  * @remarks
  * `comments` holds every comment in source order. Comments in strings are not included.
- * `testUnits` is in line order and is empty when the file has none.
+ * `testUnits` is in line order and is empty when the file has none. No two test units start on the same line.
  */
 export type TestFileParsed = {
   readonly kind: 'parsed'

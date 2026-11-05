@@ -38,7 +38,7 @@ describe('spec 패턴으로 명세 문서를, test 패턴으로 테스트 파일
     const result = await checkedIn(dir)
 
     expect(result.specItems.map(({ id, testItems }) => [id, testItems])).toEqual([
-      ['A-001', [{ location: { path: 'src/auth.test.ts', line: 2 } }]],
+      ['A-001', [{ location: { path: 'src/auth.test.ts', line: 2 }, endLine: 2 }]],
     ])
   })
 })
@@ -93,7 +93,7 @@ describe('모든 패턴이 파일을 찾으면 checked 결과', () => {
           text: '5회 실패하면 잠금',
           location: { path: 'docs/auth.md', line: 1 },
           status: 'covered',
-          testItems: [{ location: { path: 'src/auth.test.ts', line: 2 } }],
+          testItems: [{ location: { path: 'src/auth.test.ts', line: 2 }, endLine: 2 }],
         },
         { id: 'A-002', text: '30분 후 풀림', location: { path: 'docs/auth.md', line: 2 }, status: 'uncovered-spec', testItems: [] },
       ],
@@ -174,10 +174,22 @@ describe('covered 명세 항목의 testItems에 그 ID를 가리키는 테스트
     })
 
     expect((await checkedIn(dir)).specItems[0]?.testItems).toEqual([
-      { location: { path: 'src/a.test.ts', line: 2 } },
-      { location: { path: 'src/a.test.ts', line: 5 } },
-      { location: { path: 'src/b.test.ts', line: 2 } },
+      { location: { path: 'src/a.test.ts', line: 2 }, endLine: 2 },
+      { location: { path: 'src/a.test.ts', line: 5 }, endLine: 5 },
+      { location: { path: 'src/b.test.ts', line: 2 }, endLine: 2 },
     ])
+  })
+})
+
+// nocap: LIB-019
+describe('testItems의 테스트 항목마다 끝 줄 endLine을 줌', () => {
+  it('3줄에 걸친 테스트 호출을 가리키는 테스트 항목이면 닫는 괄호가 있는 줄을 끝 줄로 준다', async () => {
+    const dir = projectWith({
+      'docs/a.md': '- 하나 <!-- nocap: A-001 -->',
+      'src/a.test.ts': ['// nocap: A-001', "it('하나', () => {", '  expect(1).toBe(1)', '})'].join('\n'),
+    })
+
+    expect((await checkedIn(dir)).specItems[0]?.testItems).toEqual([{ location: { path: 'src/a.test.ts', line: 2 }, endLine: 4 }])
   })
 })
 

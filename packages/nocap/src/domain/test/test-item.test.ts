@@ -13,8 +13,9 @@ const block = (at: number, body: string): TestComment => ({
   hasCodeOnLine: false,
 })
 // The comments must fill the lines just above `at` so that they form the run of the test unit at `at`.
-const call = (at: number, ...comments: [TestComment, ...TestComment[]]): CommentsAboveTestUnit => {
-  const [run] = CommentsAboveTestUnit.collect(comments, [{ line: at }]).found
+const call = (at: number, ...comments: [TestComment, ...TestComment[]]): CommentsAboveTestUnit => callUntil(at, at, ...comments)
+const callUntil = (at: number, endLine: number, ...comments: [TestComment, ...TestComment[]]): CommentsAboveTestUnit => {
+  const [run] = CommentsAboveTestUnit.collect(comments, [{ line: at, endLine }]).found
   if (run === undefined) throw new Error(`the comments in fixture are not just above line ${at}`)
   return run
 }
@@ -26,6 +27,16 @@ describe('테스트 단위 위의 주석 덩어리에서 테스트 항목 만들
     const { item } = TestItem.parse('a.test.ts', call(2, line(1, ' nocap: A-001')))
 
     expect([item?.ids.map((id) => id.value), item?.location]).toEqual([['A-001'], { path: 'a.test.ts', line: 2 }])
+  })
+
+  it('테스트 단위가 끝나는 줄을 테스트 항목의 끝 줄로 쓴다', () => {
+    expect(TestItem.parse('a.test.ts', callUntil(2, 5, line(1, ' nocap: A-001'))).item?.endLine).toBe(5)
+  })
+
+  it('테스트 단위가 시작 줄보다 앞에서 끝나면 예외를 던진다', () => {
+    expect(() => TestItem.parse('a.test.ts', callUntil(2, 1, line(1, ' nocap: A-001')))).toThrow(
+      'TestItem endLine must be an integer of 2 or more, got 1',
+    )
   })
 
   it('주석 덩어리의 테스트 태그가 여러 개이면 위에서 아래 순서로 ID를 가진 테스트 항목 1개를 만든다', () => {

@@ -14,7 +14,18 @@ export class TestItem {
   private constructor(
     readonly ids: readonly [SpecId, ...SpecId[]],
     readonly location: Location,
+    readonly endLine: number,
   ) {}
+
+  private static of(ids: readonly [SpecId, ...SpecId[]], location: Location, endLine: number): TestItem {
+    TestItem.assertEndLineNotBeforeStart(location.line, endLine)
+    return new TestItem(ids, location, endLine)
+  }
+
+  private static assertEndLineNotBeforeStart(line: number, endLine: number): void {
+    const isValid = Number.isInteger(endLine) && endLine >= line
+    if (!isValid) throw new Error(`TestItem endLine must be an integer of ${line} or more, got ${endLine}`)
+  }
 
   static parse(path: string, run: CommentsAboveTestUnit): ParsedRun {
     const ids: SpecId[] = []
@@ -39,7 +50,8 @@ export class TestItem {
       ids.push(id)
     }
 
-    const item = isNonEmpty(ids) ? new TestItem(ids, Location.of(path, run.unitLine)) : undefined
+    const { line, endLine } = run.unit
+    const item = isNonEmpty(ids) ? TestItem.of(ids, Location.of(path, line), endLine) : undefined
     return { item, invalidTags }
   }
 
