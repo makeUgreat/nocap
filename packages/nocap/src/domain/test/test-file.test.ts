@@ -9,7 +9,7 @@ const line = (at: number, body: string, hasCodeOnLine = false): TestComment => (
   style: 'line',
   hasCodeOnLine,
 })
-const idsOf = (testFile: TestFile) => testFile.testItems.map((item) => item.ids.values.map((id) => id.value))
+const idsOf = (testFile: TestFile) => testFile.testItems.map((item) => item.ids.map((id) => id.value))
 const kindsOf = (testFile: TestFile) => testFile.invalidTags.map((invalidTag) => invalidTag.kind)
 
 describe('주석과 테스트 단위를 테스트 항목과 틀린 태그로 나누기', () => {

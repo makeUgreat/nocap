@@ -83,7 +83,7 @@ describe('어떤 명세 항목에도 없는 ID와 그 ID를 가리키는 테스�
 
     const coverage = Coverage.of({ specItems: [], testItems: [testItem] })
 
-    expect(coverage.problems).toEqual([{ kind: 'unknown-id', id: testItem.ids.values[0], testItems: [testItem] }])
+    expect(coverage.problems).toEqual([{ kind: 'unknown-id', id: testItem.ids[0], testItems: [testItem] }])
   })
 
   it('같은 알 수 없는 ID를 가리키는 테스트 항목이 2개이면 ID 1개에 두 테스트 항목을 보고한다', () => {
@@ -92,7 +92,7 @@ describe('어떤 명세 항목에도 없는 ID와 그 ID를 가리키는 테스�
 
     const coverage = Coverage.of({ specItems: [], testItems: [first, second] })
 
-    expect(coverage.problems).toEqual([{ kind: 'unknown-id', id: first.ids.values[0], testItems: [first, second] }])
+    expect(coverage.problems).toEqual([{ kind: 'unknown-id', id: first.ids[0], testItems: [first, second] }])
   })
 
   it('모든 ID가 명세 항목에 있으면 알 수 없는 ID를 보고하지 않는다', () => {

@@ -9,7 +9,7 @@ const testFileOf = (path: string, content: string) => {
   return TestFile.of(path, result.comments, result.testUnits)
 }
 const idsOf = (content: string, fileName = 'a.test.ts') =>
-  testFileOf(fileName, content).testItems.map((item) => item.ids.values.map((id) => id.value))
+  testFileOf(fileName, content).testItems.map((item) => item.ids.map((id) => id.value))
 const code = (...lines: string[]) => lines.join('\n')
 
 // nocap: TP-001
@@ -396,7 +396,7 @@ describe('주석 덩어리 안의 같은 ID는 첫 태그만 붙이고 뒤의 �
   it('같은 ID의 테스트 태그가 2개이면 첫 태그만 붙이고 뒤의 태그를 첫 태그의 줄과 함께 보고한다', () => {
     const testFile = parsedOf(code('// nocap: A-001', '// nocap: A-001', "it('a', () => {})"))
 
-    expect([testFile.testItems.map((item) => item.ids.values.map((id) => id.value)), testFile.invalidTags]).toEqual([
+    expect([testFile.testItems.map((item) => item.ids.map((id) => id.value)), testFile.invalidTags]).toEqual([
       [['A-001']],
       [{ kind: 'repeated-id', location: { path: 'src/a.test.ts', line: 2 }, id: { value: 'A-001' }, firstTagLine: 1 }],
     ])

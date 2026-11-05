@@ -18,14 +18,14 @@ const call = (at: number, ...comments: [TestComment, ...TestComment[]]): Comment
   if (run === undefined) throw new Error(`the comments in fixture are not just above line ${at}`)
   return run
 }
-const idsOf = (run: CommentsAboveTestUnit) => TestItem.parse('a.test.ts', run).item?.ids.values.map((id) => id.value)
+const idsOf = (run: CommentsAboveTestUnit) => TestItem.parse('a.test.ts', run).item?.ids.map((id) => id.value)
 const kindsOf = (run: CommentsAboveTestUnit) => TestItem.parse('a.test.ts', run).invalidTags.map((invalidTag) => invalidTag.kind)
 
 describe('테스트 단위 위의 주석 덩어리에서 테스트 항목 만들기', () => {
   it('주석 덩어리의 테스트 태그가 1개이면 테스트 단위의 줄로 테스트 항목을 만든다', () => {
     const { item } = TestItem.parse('a.test.ts', call(2, line(1, ' nocap: A-001')))
 
-    expect([item?.ids.values.map((id) => id.value), item?.location]).toEqual([['A-001'], { path: 'a.test.ts', line: 2 }])
+    expect([item?.ids.map((id) => id.value), item?.location]).toEqual([['A-001'], { path: 'a.test.ts', line: 2 }])
   })
 
   it('주석 덩어리의 테스트 태그가 여러 개이면 위에서 아래 순서로 ID를 가진 테스트 항목 1개를 만든다', () => {
