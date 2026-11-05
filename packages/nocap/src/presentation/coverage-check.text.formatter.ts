@@ -14,9 +14,16 @@ const DIAGNOSTIC_KINDS = [
   'uncovered-spec',
   'unknown-id',
   'duplicate-id',
-  'invalid-id',
   'missing-id',
   'multiple-ids',
+  'invalid-id',
+  'block-comment',
+  'no-sentence',
+  'not-at-item-end',
+  'outside-list-item',
+  'after-code',
+  'not-above-test-call',
+  'repeated-id',
   'read-error',
   'unsupported-extension',
   'syntax-error',
@@ -34,6 +41,7 @@ type Diagnostic = {
 
 const ANSI = { bold: '1', dim: '2', red: '31', green: '32', yellow: '33', cyan: '36' } as const
 const ID_CHARS_HINT = 'use only A-Z, a-z, 0-9, "-", "_"'
+const ONE_ID_HINT = 'a tag takes 1 id; write one tag per id'
 
 export class CoverageCheckTextFormatter {
   constructor(private readonly colors: ColorSupport = { stdout: false, stderr: false }) {}
@@ -93,23 +101,63 @@ function coverageProblemDiagnostics(problem: CoverageProblem): Diagnostic[] {
 }
 
 function invalidTagDiagnostics(invalidTag: InvalidTag): Diagnostic[] {
+  const { location } = invalidTag
   switch (invalidTag.kind) {
-    case 'id-rule-violation':
-      return invalidTag.invalidCandidates.map((invalidCandidate) => invalidIdDiagnostic(invalidTag.location, invalidCandidate))
     case 'missing-id':
-      return [diagnosticAt(invalidTag.location, 'missing-id', [plain('missing id in the tag')], 'write an id, e.g. "nocap: AUTH-001"')]
+      return [diagnosticAt(location, 'missing-id', [plain('missing id in the tag')], 'write an id, e.g. "nocap: AUTH-001"')]
     case 'multiple-ids': {
-      const ids = invalidTag.ids.flatMap((id, index) => (index === 0 ? [value(id)] : [plain(', '), value(id)]))
-      const message = [plain(`spec tag has ${invalidTag.ids.length} ids `), ...ids]
-      return [diagnosticAt(invalidTag.location, 'multiple-ids', message, 'a spec item takes 1 id')]
+      const values = invalidTag.values.flatMap((id, index) => (index === 0 ? [value(id)] : [plain(', '), value(id)]))
+      const message = [plain(`tag has ${invalidTag.values.length} ids `), ...values]
+      return [diagnosticAt(location, 'multiple-ids', message, ONE_ID_HINT)]
     }
+    case 'id-rule-violation':
+      return [invalidIdDiagnostic(location, invalidTag.invalidCandidate)]
+    case 'block-comment':
+      return [diagnosticAt(location, 'block-comment', [plain('test tag is in a block comment')], 'use a "//" line comment')]
+    case 'no-sentence':
+      return [
+        diagnosticAt(location, 'no-sentence', [plain('spec tag has no spec sentence before it')], 'write the spec sentence before the tag'),
+      ]
+    case 'not-at-item-end':
+      return [
+        diagnosticAt(
+          location,
+          'not-at-item-end',
+          [plain('spec tag is not at the end of the first paragraph of a list item')],
+          'put the tag at the end of the first paragraph of the list item',
+        ),
+      ]
+    case 'outside-list-item':
+      return [
+        diagnosticAt(location, 'outside-list-item', [plain('spec tag is not in a list item')], 'put the tag at the end of a list item'),
+      ]
+    case 'after-code':
+      return [
+        diagnosticAt(
+          location,
+          'after-code',
+          [plain('test tag is on the same line as code')],
+          'put the tag on its own line above the test call',
+        ),
+      ]
+    case 'not-above-test-call':
+      return [
+        diagnosticAt(
+          location,
+          'not-above-test-call',
+          [plain('test tag is not above a test call')],
+          'put the tag right above the test call, with no blank line between',
+        ),
+      ]
+    case 'repeated-id':
+      return [diagnosticAt(location, 'repeated-id', [value(invalidTag.id), plain(` is already tagged at line ${invalidTag.firstTagLine}`)])]
   }
 }
 
 function invalidIdDiagnostic(location: Location, invalidCandidate: InvalidIdCandidate): Diagnostic {
   switch (invalidCandidate.kind) {
     case 'invalid-whitespace':
-      return diagnosticAt(location, 'invalid-id', [value(invalidCandidate.value), plain(' has a space')], 'separate ids with ","')
+      return diagnosticAt(location, 'invalid-id', [value(invalidCandidate.value), plain(' has a space')], ONE_ID_HINT)
     case 'invalid-char':
       return diagnosticAt(
         location,

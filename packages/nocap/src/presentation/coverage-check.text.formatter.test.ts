@@ -44,17 +44,22 @@ const duplicate = (id: string, ...specLocations: [Location, Location, ...Locatio
   id,
   specLocations,
 })
-const invalidId = (path: string, line: number, ...invalidCandidates: [InvalidIdCandidate, ...InvalidIdCandidate[]]): InvalidTag => ({
+const invalidId = (path: string, line: number, invalidCandidate: InvalidIdCandidate): InvalidTag => ({
   kind: 'id-rule-violation',
   location: at(path, line),
-  invalidCandidates,
+  invalidCandidate,
 })
 const id = (value: string, firstInvalidChar: string): InvalidIdCandidate => ({ kind: 'invalid-char', value, firstInvalidChar })
 const idWithWhitespace = (value: string): InvalidIdCandidate => ({ kind: 'invalid-whitespace', value })
-const multipleIds = (path: string, line: number, ...ids: [string, string, ...string[]]): InvalidTag => ({
+const multipleIds = (path: string, line: number, ...values: [string, string, ...string[]]): InvalidTag => ({
   kind: 'multiple-ids',
   location: at(path, line),
-  ids,
+  values,
+})
+type MisplacedKind = 'not-above-test-call' | 'after-code' | 'not-at-item-end' | 'outside-list-item' | 'no-sentence'
+const misplaced = (kind: MisplacedKind, path: string, line: number): InvalidTag => ({
+  kind,
+  location: at(path, line),
 })
 
 // nocap: CLI-005
@@ -144,21 +149,20 @@ describe('중복 ID를 가진 명세 항목마다 duplicate-id 진단 1줄', () 
   })
 })
 
-// nocap: CLI-010
-describe('틀린 태그의 규칙을 어긴 ID마다 invalid-id 진단 1줄', () => {
-  it('규칙을 어긴 ID가 2개이면 같은 위치에 2줄을 쓴다', () => {
-    const result = resultOf({ invalidTags: [invalidId('src/a.test.ts', 7, id('A.1', '.'), id('B/2', '/'))] })
+// nocap: CLI-025
+describe('ID 규칙을 어긴 틀린 태그마다 invalid-id 진단 1줄', () => {
+  it('ID에 규칙 밖의 문자가 있으면 그 ID에서 처음 나온 틀린 문자를 쓴다', () => {
+    const result = resultOf({ invalidTags: [invalidId('src/a.test.ts', 7, id('A.1/2', '.'))] })
 
-    expect(stdoutLinesOf(result)).toEqual([
-      'src/a.test.ts:7: error[invalid-id]: "A.1" has "."; hint: use only A-Z, a-z, 0-9, "-", "_"',
-      'src/a.test.ts:7: error[invalid-id]: "B/2" has "/"; hint: use only A-Z, a-z, 0-9, "-", "_"',
-    ])
+    expect(stdoutLinesOf(result)).toEqual(['src/a.test.ts:7: error[invalid-id]: "A.1/2" has "."; hint: use only A-Z, a-z, 0-9, "-", "_"'])
   })
 
-  it('처음 나온 틀린 문자가 공백이면 쉼표로 ID를 나누라고 안내한다', () => {
+  it('처음 나온 틀린 문자가 공백이면 태그 1개에 ID 1개만 쓰라고 안내한다', () => {
     const result = resultOf({ invalidTags: [invalidId('src/a.test.ts', 7, idWithWhitespace('A-001 A-002'))] })
 
-    expect(stdoutLinesOf(result)).toEqual(['src/a.test.ts:7: error[invalid-id]: "A-001 A-002" has a space; hint: separate ids with ","'])
+    expect(stdoutLinesOf(result)).toEqual([
+      'src/a.test.ts:7: error[invalid-id]: "A-001 A-002" has a space; hint: a tag takes 1 id; write one tag per id',
+    ])
   })
 })
 
@@ -173,13 +177,76 @@ describe('ID가 누락된 틀린 태그마다 missing-id 진단 1줄', () => {
   })
 })
 
-// nocap: CLI-013
-describe('ID가 2개 이상인 명세 태그마다 multiple-ids 진단 1줄', () => {
-  it('명세 태그에 ID가 2개이면 ID 개수와 그 ID들을 쓴다', () => {
+// nocap: CLI-026
+describe('ID가 2개 이상인 틀린 태그마다 multiple-ids 진단 1줄', () => {
+  it('태그에 ID가 2개이면 ID 개수와 그 값들을 쓰고 태그 1개에 ID 1개만 쓰라고 안내한다', () => {
     const result = resultOf({ invalidTags: [multipleIds('docs/a.md', 18, 'A-004', 'A-005')] })
 
     expect(stdoutLinesOf(result)).toEqual([
-      'docs/a.md:18: error[multiple-ids]: spec tag has 2 ids "A-004", "A-005"; hint: a spec item takes 1 id',
+      'docs/a.md:18: error[multiple-ids]: tag has 2 ids "A-004", "A-005"; hint: a tag takes 1 id; write one tag per id',
+    ])
+  })
+})
+
+// nocap: CLI-027
+describe('주석 덩어리 밖의 테스트 태그마다 not-above-test-call 진단 1줄', () => {
+  it('테스트 호출 위가 아닌 테스트 태그의 줄에 진단을 쓰고 테스트 호출 바로 위에 쓰라고 안내한다', () => {
+    expect(stdoutLinesOf(resultOf({ invalidTags: [misplaced('not-above-test-call', 'a.test.ts', 3)] }))).toEqual([
+      'a.test.ts:3: error[not-above-test-call]: test tag is not above a test call; hint: put the tag right above the test call, with no blank line between',
+    ])
+  })
+})
+
+// nocap: CLI-028
+describe('코드 뒤에 붙은 nocap: 라인 주석마다 after-code 진단 1줄', () => {
+  it('코드 뒤의 테스트 태그의 줄에 진단을 쓰고 자기 줄에 쓰라고 안내한다', () => {
+    expect(stdoutLinesOf(resultOf({ invalidTags: [misplaced('after-code', 'a.test.ts', 3)] }))).toEqual([
+      'a.test.ts:3: error[after-code]: test tag is on the same line as code; hint: put the tag on its own line above the test call',
+    ])
+  })
+})
+
+// nocap: CLI-029
+describe('nocap:이 있는 블록 주석마다 block-comment 진단 1줄', () => {
+  it('블록 주석의 줄에 진단을 쓰고 // 라인 주석을 쓰라고 안내한다', () => {
+    expect(stdoutLinesOf(resultOf({ invalidTags: [{ kind: 'block-comment', location: at('a.test.ts', 3) }] }))).toEqual([
+      'a.test.ts:3: error[block-comment]: test tag is in a block comment; hint: use a "//" line comment',
+    ])
+  })
+})
+
+// nocap: CLI-030
+describe('주석 덩어리 안에서 반복된 ID의 테스트 태그마다 repeated-id 진단 1줄', () => {
+  it('반복된 테스트 태그의 줄에 그 ID와 첫 태그의 줄을 쓴다', () => {
+    const result = resultOf({ invalidTags: [{ kind: 'repeated-id', location: at('a.test.ts', 4), id: 'A-001', firstTagLine: 3 }] })
+
+    expect(stdoutLinesOf(result)).toEqual(['a.test.ts:4: error[repeated-id]: "A-001" is already tagged at line 3'])
+  })
+})
+
+// nocap: CLI-031
+describe('리스트 항목 첫 문단의 맨 끝에 있지 않은 명세 태그마다 not-at-item-end 진단 1줄', () => {
+  it('명세 태그의 줄에 진단을 쓰고 첫 문단의 끝에 쓰라고 안내한다', () => {
+    expect(stdoutLinesOf(resultOf({ invalidTags: [misplaced('not-at-item-end', 'a.md', 2)] }))).toEqual([
+      'a.md:2: error[not-at-item-end]: spec tag is not at the end of the first paragraph of a list item; hint: put the tag at the end of the first paragraph of the list item',
+    ])
+  })
+})
+
+// nocap: CLI-032
+describe('리스트 항목 밖의 명세 태그마다 outside-list-item 진단 1줄', () => {
+  it('명세 태그의 줄에 진단을 쓰고 리스트 항목의 끝에 쓰라고 안내한다', () => {
+    expect(stdoutLinesOf(resultOf({ invalidTags: [misplaced('outside-list-item', 'a.md', 2)] }))).toEqual([
+      'a.md:2: error[outside-list-item]: spec tag is not in a list item; hint: put the tag at the end of a list item',
+    ])
+  })
+})
+
+// nocap: CLI-033
+describe('명세 문장 없이 명세 태그만 있는 리스트 항목의 명세 태그마다 no-sentence 진단 1줄', () => {
+  it('명세 태그의 줄에 진단을 쓰고 태그 앞에 명세 문장을 쓰라고 안내한다', () => {
+    expect(stdoutLinesOf(resultOf({ invalidTags: [misplaced('no-sentence', 'a.md', 2)] }))).toEqual([
+      'a.md:2: error[no-sentence]: spec tag has no spec sentence before it; hint: write the spec sentence before the tag',
     ])
   })
 })
@@ -263,7 +330,7 @@ describe('진단이 있으면 진단 수, 파일 수, 종류별 개수를 한 �
     const result = resultOf({
       specCount: 1,
       coverageProblems: [uncovered('A-001', 'a.md', 1)],
-      invalidTags: [invalidId('b.test.ts', 1, id('X.1', '.'), id('Y.1', '.'))],
+      invalidTags: [invalidId('b.test.ts', 1, id('X.1', '.')), invalidId('b.test.ts', 2, id('Y.1', '.'))],
     })
 
     expect(stderrLinesOf(result)[0]).toBe('3 errors in 2 files: 1 uncovered-spec, 2 invalid-id')
@@ -272,6 +339,24 @@ describe('진단이 있으면 진단 수, 파일 수, 종류별 개수를 한 �
   it('진단이 1개이면 단수형으로 쓴다', () => {
     expect(stderrLinesOf(resultOf({ specCount: 1, coverageProblems: [uncovered('A-001', 'a.md', 1)] }))[0]).toBe(
       '1 error in 1 file: 1 uncovered-spec',
+    )
+  })
+})
+
+describe('요약의 종류 순서', () => {
+  it('틀린 태그의 종류는 문법의 층 순서로 쓴다', () => {
+    const result = resultOf({
+      invalidTags: [
+        { kind: 'repeated-id', location: at('a.test.ts', 1), id: 'A-001', firstTagLine: 1 },
+        { kind: 'outside-list-item', location: at('a.md', 1) },
+        { kind: 'block-comment', location: at('a.test.ts', 2) },
+        invalidId('a.test.ts', 3, id('X.1', '.')),
+        { kind: 'missing-id', location: at('a.test.ts', 4) },
+      ],
+    })
+
+    expect(stderrLinesOf(result)[0]).toBe(
+      '5 errors in 2 files: 1 missing-id, 1 invalid-id, 1 block-comment, 1 outside-list-item, 1 repeated-id',
     )
   })
 })
