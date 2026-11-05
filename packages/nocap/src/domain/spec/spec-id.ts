@@ -21,14 +21,6 @@ export class SpecId {
     return { kind: 'valid', id: new SpecId(candidate) }
   }
 
-  get key(): string {
-    return this.value
-  }
-
-  equals(other: SpecId): boolean {
-    return this.key === other.key
-  }
-
   private static assertNotEmpty(candidate: string): void {
     if (candidate === '') throw new Error('An id candidate must not be empty')
   }
