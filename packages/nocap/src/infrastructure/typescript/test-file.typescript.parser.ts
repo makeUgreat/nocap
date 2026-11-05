@@ -38,7 +38,7 @@ export class TestFileTypescriptParser implements TestFileParser {
     const lineIndex = LineIndex.of(content)
     return {
       kind: 'parsed',
-      comments: comments.map((comment) => testCommentOf(comment, lineIndex)),
+      comments: comments.map((comment) => toTestComment(comment, lineIndex)),
       testUnits: testUnitsOf(program, lineIndex),
     }
   }
@@ -51,7 +51,7 @@ function testUnitsOf(program: Program, lineIndex: LineIndex): TestUnit[] {
     .sort((a, b) => a.line - b.line)
 }
 
-function testCommentOf(comment: Comment, lineIndex: LineIndex): TestComment {
+function toTestComment(comment: Comment, lineIndex: LineIndex): TestComment {
   const { line, endLine, hasTextAround } = lineIndex.spanOf(comment.start, comment.end)
   return {
     line,

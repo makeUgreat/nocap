@@ -2,6 +2,7 @@ import type { IConfiguration } from 'dependency-cruiser'
 
 const architecture = 'docs/architecture.md#의존성-규칙'
 const contexts = 'docs/architecture.md#맥락-디렉토리'
+const directories = 'docs/architecture.md#디렉토리-규칙'
 
 const config: IConfiguration = {
   forbidden: [
@@ -29,16 +30,24 @@ const config: IConfiguration = {
     {
       name: 'presentation-not-to-infrastructure',
       severity: 'error',
-      comment: `presentation must not import infrastructure. Only the entry points src/bin.ts and src/index.ts wire adapters. See ${architecture}.`,
+      comment: `presentation must not import infrastructure. Only the entry point src/index.ts wires adapters. See ${architecture}.`,
       from: { path: '^src/presentation/' },
       to: { path: '^src/infrastructure/' },
     },
     {
-      name: 'presentation-not-to-domain',
+      name: 'presentation-only-api-to-domain',
       severity: 'error',
-      comment: `presentation must not import domain. application turns the domain model into its own result types. See ${architecture}.`,
-      from: { path: '^src/presentation/' },
+      comment: `In presentation only an api file may import domain. It turns the use case result into the public types. See ${architecture}.`,
+      // An api test makes domain objects to build the use case result it passes in.
+      from: { path: '^src/presentation/', pathNot: '[.]api([.]test)?[.]ts$' },
       to: { path: '^src/domain/' },
+    },
+    {
+      name: 'presentation-api-to-domain-type-only',
+      severity: 'error',
+      comment: `An api file may import domain only as types. It reads domain objects and does not make or judge them. See ${architecture}.`,
+      from: { path: '^src/presentation/.+[.]api[.]ts$' },
+      to: { path: '^src/domain/', dependencyTypesNot: ['type-only'] },
     },
     {
       name: 'infrastructure-only-to-domain-boundary',
@@ -54,6 +63,27 @@ const config: IConfiguration = {
       comment: `A boundary type may use only other boundary types, so that it cannot carry the domain model out of domain. See ${architecture}.`,
       from: { path: '^src/domain/.+[.]boundary[.]ts$' },
       to: { path: '^src/domain/', pathNot: '[.]boundary[.]ts$' },
+    },
+    {
+      name: 'presentation-adapters-only-to-public',
+      severity: 'error',
+      comment: `A driving adapter may use another driving adapter only through its public types (*.public.ts), as a package user does. See ${directories}.`,
+      from: { path: '^src/presentation/([^/]+)/' },
+      to: { path: '^src/presentation/', pathNot: ['^src/presentation/$1/', '[.]public[.]ts$'] },
+    },
+    {
+      name: 'bin-not-to-inner-layers',
+      severity: 'error',
+      comment: `src/bin.ts must not wire adapters. Only src/index.ts wires them, and the CLI calls the library API. See ${architecture}.`,
+      from: { path: '^src/bin[.]ts$' },
+      to: { path: '^src/(domain|application|infrastructure)/' },
+    },
+    {
+      name: 'public-only-to-public',
+      severity: 'error',
+      comment: `A public type (*.public.ts) may use only other public types, so that no internal type becomes part of the package API. See ${architecture}.`,
+      from: { path: '[.]public[.]ts$' },
+      to: { path: '^src/', pathNot: '[.]public[.]ts$' },
     },
     {
       name: 'lib-not-to-src',

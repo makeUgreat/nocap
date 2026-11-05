@@ -1,11 +1,11 @@
 import type {
-  CoverageCheckResult,
+  CheckedCoverage,
   CoverageProblem,
   FileError,
   InvalidIdCandidate,
   InvalidTag,
   Location,
-} from '../application/coverage/coverage-check.result.js'
+} from '../library/coverage-check.public.js'
 
 export type ColorSupport = { readonly stdout: boolean; readonly stderr: boolean }
 export type FormattedOutput = { readonly stdout: string; readonly stderr: string }
@@ -46,7 +46,7 @@ const ONE_ID_HINT = 'a tag takes 1 id; write one tag per id'
 export class CoverageCheckTextFormatter {
   constructor(private readonly colors: ColorSupport = { stdout: false, stderr: false }) {}
 
-  format(result: CoverageCheckResult): FormattedOutput {
+  format(result: CheckedCoverage): FormattedOutput {
     const diagnostics = inReportOrder([
       ...result.coverageProblems.flatMap((problem) => coverageProblemDiagnostics(problem)),
       ...result.invalidTags.flatMap((invalidTag) => invalidTagDiagnostics(invalidTag)),
@@ -70,10 +70,10 @@ export class CoverageCheckTextFormatter {
       .join('')
   }
 
-  private stderrOf(diagnostics: readonly Diagnostic[], result: CoverageCheckResult): string {
+  private stderrOf(diagnostics: readonly Diagnostic[], result: CheckedCoverage): string {
     const paint = painter(this.colors.stderr)
     const coverageLine = paint(
-      [result.isFullyCovered() ? ANSI.green : ANSI.yellow],
+      [result.coveredSpecCount === result.specCount ? ANSI.green : ANSI.yellow],
       `${result.coveredSpecCount} of ${result.specCount} specs covered`,
     )
     if (diagnostics.length === 0) return `${coverageLine}\n`

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { CoverageCheckResult } from './coverage-check.result.js'
+import type { CheckedCoverage } from './coverage-check.result.js'
 import { CoverageCheckUsecase, type CoverageCheckInput } from './coverage-check.usecase.js'
 import type { FileFinder } from '../file/file.finder.js'
 import type { FileReader } from '../file/file.reader.js'
@@ -56,21 +56,21 @@ const runUsecase = (
   reader: FileReader = fakeReader(contentByPath),
 ) => new CoverageCheckUsecase(fakeFinder(pathsByPattern), reader, fakeSpecParser, fakeTestParser).run(input)
 
-const run = async (pathsByPattern: Record<string, string[]>, contentByPath: Record<string, string>): Promise<CoverageCheckResult> => {
+const run = async (pathsByPattern: Record<string, string[]>, contentByPath: Record<string, string>): Promise<CheckedCoverage> => {
   const result = await runUsecase(pathsByPattern, contentByPath)
   if (result.kind !== 'checked') throw new Error(`Expected a checked result, got ${result.kind}`)
   return result
 }
 
-const uncoveredSpecPathsOf = (result: CoverageCheckResult) =>
-  result.coverageProblems.flatMap((problem) => (problem.kind === 'uncovered-spec' ? [problem.location.path] : []))
+const uncoveredSpecPathsOf = (result: CheckedCoverage) =>
+  result.coverage.problems.flatMap((problem) => (problem.kind === 'uncovered-spec' ? [problem.specItem.location.path] : []))
 
 // nocap: CC-001
 describe('명세 패턴의 파일은 명세 문서로, 테스트 패턴의 파일은 테스트 파일로 읽음', () => {
   it('명세 패턴의 파일에 있는 명세 항목이 테스트 패턴의 파일에 있는 테스트 항목과 연결된다', async () => {
     const result = await run({ specs: ['a.md'], tests: ['a.test.ts'] }, { 'a.md': 'nocap: A-001', 'a.test.ts': 'nocap: A-001' })
 
-    expect([result.specCount, result.coveredSpecCount]).toEqual([1, 1])
+    expect([result.coverage.specCount, result.coverage.coveredSpecCount]).toEqual([1, 1])
   })
 })
 
@@ -79,9 +79,9 @@ describe('같은 쪽 패턴 여러 개에 맞는 파일은 한 번만 읽음', (
   it('테스트 파일이 테스트 패턴 2개에 맞아도 그 파일의 테스트 항목은 1번만 판정에 들어간다', async () => {
     const result = await run({ specs: ['empty.md'], tests: ['a.test.ts', 'a.test.ts'] }, { 'a.test.ts': 'nocap: A-999' })
 
-    expect(result.coverageProblems.map((problem) => (problem.kind === 'unknown-id' ? problem.testLocations.length : problem.kind))).toEqual(
-      [1],
-    )
+    expect(result.coverage.problems.map((problem) => (problem.kind === 'unknown-id' ? problem.testItems.length : problem.kind))).toEqual([
+      1,
+    ])
   })
 })
 
@@ -178,7 +178,7 @@ describe('파일 오류가 있어도 나머지 파일로 판정', () => {
       { 'a.md': 'nocap: A-001', 'a.test.ts': SYNTAX_ERROR, 'b.test.ts': 'nocap: A-001' },
     )
 
-    expect(result.coveredSpecCount).toBe(1)
+    expect(result.coverage.coveredSpecCount).toBe(1)
   })
 })
 
@@ -209,6 +209,6 @@ describe('빈 입력', () => {
   it('찾은 파일이 모두 비어 있으면 모든 목록이 비어 있다', async () => {
     const result = await run({ specs: ['empty.md'], tests: ['empty.test.ts'] }, {})
 
-    expect([result.specCount, result.coverageProblems, result.invalidTags, result.fileErrors]).toEqual([0, [], [], []])
+    expect([result.coverage.specCount, result.coverage.problems, result.invalidTags, result.fileErrors]).toEqual([0, [], [], []])
   })
 })

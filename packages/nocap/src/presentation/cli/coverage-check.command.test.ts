@@ -1,22 +1,27 @@
 import { describe, expect, it } from 'vitest'
-import { CoverageCheckResult, type UnmatchedPatterns } from '../../application/coverage/coverage-check.result.js'
-import type { CoverageCheckInput } from '../../application/coverage/coverage-check.usecase.js'
-import { CoverageCheckTextFormatter } from '../coverage-check.text.formatter.js'
+import type { CheckedCoverage, CoverageCheckInput, CoverageCheckResult, UnmatchedPatterns } from '../library/coverage-check.public.js'
 import { CoverageCheckCommand } from './coverage-check.command.js'
+import { CoverageCheckTextFormatter } from './coverage-check.text.formatter.js'
 
-const resultOf = (data: Partial<Parameters<typeof CoverageCheckResult.of>[0]>) =>
-  CoverageCheckResult.of({ specCount: 0, coveredSpecCount: 0, coverageProblems: [], invalidTags: [], fileErrors: [], ...data })
+const resultOf = (data: Partial<CheckedCoverage>): CheckedCoverage => ({
+  kind: 'checked',
+  specCount: 0,
+  coveredSpecCount: 0,
+  coverageProblems: [],
+  invalidTags: [],
+  fileErrors: [],
+  specItems: [],
+  ...data,
+})
 const EMPTY_RESULT = resultOf({})
 
-const commandReturning = (result: CoverageCheckResult | UnmatchedPatterns) => {
+const commandReturning = (result: CoverageCheckResult) => {
   const inputs: CoverageCheckInput[] = []
-  const coverageCheck = {
-    run: async (input: CoverageCheckInput) => {
-      inputs.push(input)
-      return result
-    },
+  const checkCoverage = async (input: CoverageCheckInput) => {
+    inputs.push(input)
+    return result
   }
-  return { command: new CoverageCheckCommand(coverageCheck, new CoverageCheckTextFormatter()), inputs }
+  return { command: new CoverageCheckCommand(checkCoverage, new CoverageCheckTextFormatter()), inputs }
 }
 
 // nocap: CLI-001
@@ -26,7 +31,7 @@ describe('--spec과 --test로 받은 패턴으로 파일을 찾음', () => {
 
     await command.run(['--spec', 'docs/*.md', '--test', 'a/*.test.ts', '--spec', 'specs/*.md', '--test', 'b/*.test.ts'])
 
-    expect(inputs).toEqual([{ specPatterns: ['docs/*.md', 'specs/*.md'], testPatterns: ['a/*.test.ts', 'b/*.test.ts'] }])
+    expect(inputs).toEqual([{ spec: ['docs/*.md', 'specs/*.md'], test: ['a/*.test.ts', 'b/*.test.ts'] }])
   })
 })
 
@@ -145,14 +150,9 @@ describe('파일을 찾지 못한 패턴이 있으면 패턴마다 1줄을 쓰�
 })
 
 const commandThrowing = (error: unknown) =>
-  new CoverageCheckCommand(
-    {
-      run: async () => {
-        throw error
-      },
-    },
-    new CoverageCheckTextFormatter(),
-  )
+  new CoverageCheckCommand(async () => {
+    throw error
+  }, new CoverageCheckTextFormatter())
 
 // nocap: CLI-023
 describe('예상하지 못한 오류가 나면 stderr에 오류와 stack trace를 쓰고 종료 코드 2', () => {
