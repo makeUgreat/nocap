@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import {
-  CoverageCheckResult,
-  type CoverageProblem,
-  type FileError,
-  type InvalidIdCandidate,
-  type InvalidTag,
-  type Location,
-} from '../application/coverage/coverage-check.result.js'
+import type {
+  CheckedCoverage,
+  CoverageProblem,
+  FileError,
+  InvalidIdCandidate,
+  InvalidTag,
+  Location,
+} from '../library/coverage-check.public.js'
 import { CoverageCheckTextFormatter } from './coverage-check.text.formatter.js'
 
 const formatter = new CoverageCheckTextFormatter()
@@ -18,14 +18,27 @@ type ResultData = {
   readonly invalidTags?: readonly InvalidTag[]
   readonly fileErrors?: readonly FileError[]
 }
-const resultOf = ({ specCount = 0, coveredSpecCount = 0, coverageProblems = [], invalidTags = [], fileErrors = [] }: ResultData) =>
-  CoverageCheckResult.of({ specCount, coveredSpecCount, coverageProblems, invalidTags, fileErrors })
-const stdoutLinesOf = (result: CoverageCheckResult) =>
+const resultOf = ({
+  specCount = 0,
+  coveredSpecCount = 0,
+  coverageProblems = [],
+  invalidTags = [],
+  fileErrors = [],
+}: ResultData): CheckedCoverage => ({
+  kind: 'checked',
+  specCount,
+  coveredSpecCount,
+  coverageProblems,
+  invalidTags,
+  fileErrors,
+  specItems: [],
+})
+const stdoutLinesOf = (result: CheckedCoverage) =>
   formatter
     .format(result)
     .stdout.split('\n')
     .filter((line) => line !== '')
-const stderrLinesOf = (result: CoverageCheckResult) =>
+const stderrLinesOf = (result: CheckedCoverage) =>
   formatter
     .format(result)
     .stderr.split('\n')

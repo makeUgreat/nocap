@@ -1,7 +1,6 @@
 import { inspect, parseArgs } from 'node:util'
-import type { CoverageCheckResult, UnmatchedPatterns } from '../../application/coverage/coverage-check.result.js'
-import type { CoverageCheckInput } from '../../application/coverage/coverage-check.usecase.js'
-import type { CoverageCheckTextFormatter } from '../coverage-check.text.formatter.js'
+import type { CheckedCoverage, CoverageCheckInput, CoverageCheckResult, UnmatchedPatterns } from '../library/coverage-check.public.js'
+import type { CoverageCheckTextFormatter } from './coverage-check.text.formatter.js'
 import { isNonEmpty } from '../../lib/array-length.js'
 
 const USAGE = 'Usage: nocap --spec <glob> [--spec <glob> ...] --test <glob> [--test <glob> ...]'
@@ -12,14 +11,14 @@ export type CommandOutput = {
   readonly exitCode: 0 | 1 | 2
 }
 
-type CoverageCheck = { run(input: CoverageCheckInput): Promise<CoverageCheckResult | UnmatchedPatterns> }
+type CheckCoverage = (input: CoverageCheckInput) => Promise<CoverageCheckResult>
 type ParsedArgs =
   | { readonly kind: 'parsed'; readonly input: CoverageCheckInput }
   | { readonly kind: 'usage-error'; readonly message: string }
 
 export class CoverageCheckCommand {
   constructor(
-    private readonly coverageCheck: CoverageCheck,
+    private readonly checkCoverage: CheckCoverage,
     private readonly formatter: CoverageCheckTextFormatter,
   ) {}
 
@@ -28,9 +27,9 @@ export class CoverageCheckCommand {
     if (parsed.kind === 'usage-error') return { stdout: '', stderr: `nocap: ${parsed.message}\n${USAGE}\n`, exitCode: 2 }
 
     try {
-      const result = await this.coverageCheck.run(parsed.input)
+      const result = await this.checkCoverage(parsed.input)
       if (result.kind === 'unmatched-patterns') return { stdout: '', stderr: unmatchedPatternsMessage(result), exitCode: 2 }
-      return { ...this.formatter.format(result), exitCode: result.hasProblems() ? 1 : 0 }
+      return { ...this.formatter.format(result), exitCode: hasProblems(result) ? 1 : 0 }
     } catch (error) {
       return { stdout: '', stderr: internalErrorMessage(error), exitCode: 2 }
     }
@@ -46,11 +45,15 @@ export class CoverageCheckCommand {
       })
       if (!isNonEmpty(values.spec)) return { kind: 'usage-error', message: 'missing --spec' }
       if (!isNonEmpty(values.test)) return { kind: 'usage-error', message: 'missing --test' }
-      return { kind: 'parsed', input: { specPatterns: values.spec, testPatterns: values.test } }
+      return { kind: 'parsed', input: { spec: values.spec, test: values.test } }
     } catch (error) {
       return { kind: 'usage-error', message: error instanceof Error ? error.message : String(error) }
     }
   }
+}
+
+function hasProblems(result: CheckedCoverage): boolean {
+  return result.coverageProblems.length > 0 || result.invalidTags.length > 0 || result.fileErrors.length > 0
 }
 
 const OPTION_OF_SIDE = { spec: '--spec', test: '--test' } as const

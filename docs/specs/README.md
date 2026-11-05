@@ -35,4 +35,5 @@ related:
 | [coverage.md](coverage.md) | `CV` | nocap이 명세 항목과 테스트 항목을 연결해 커버 여부를 정하는 동작 |
 | [coverage-check.md](coverage-check.md) | `CC` | nocap이 파일을 찾아 읽고 판정 결과를 모으는 동작 |
 | [cli.md](cli.md) | `CLI` | nocap 명령의 옵션, 출력, 종료 코드 |
+| [library.md](library.md) | `LIB` | nocap 패키지가 내보내는 함수의 입력, 결과, 실패 |
 

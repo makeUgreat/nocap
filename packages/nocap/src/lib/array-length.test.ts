@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { hasTwoOrMore, isNonEmpty, mapNonEmpty } from './array-length.js'
+import { hasTwoOrMore, isNonEmpty, mapNonEmpty, mapTwoOrMore } from './array-length.js'
 
 describe('isNonEmpty', () => {
   it('undefined이면 거짓이다', () => {
@@ -56,5 +56,25 @@ describe('mapNonEmpty', () => {
     const empty: number[] = []
     // @ts-expect-error an array that may be empty is not a non-empty tuple
     expectTypeOf(mapNonEmpty(empty, (n) => n)).toBeArray()
+  })
+})
+
+describe('mapTwoOrMore', () => {
+  it('항목이 2개이면 바꾼 항목 2개를 돌려준다', () => {
+    expect(mapTwoOrMore([1, 2], (n) => n * 10)).toEqual([10, 20])
+  })
+
+  it('항목이 여러 개이면 순서를 지켜 모두 바꾼다', () => {
+    expect(mapTwoOrMore([1, 2, 3], (n) => `${n}`)).toEqual(['1', '2', '3'])
+  })
+
+  it('결과 타입은 바꾼 값이 2개 이상인 배열이다', () => {
+    expectTypeOf(mapTwoOrMore([1, 2], (n) => `${n}`)).toEqualTypeOf<[string, string, ...string[]]>()
+  })
+
+  it('항목이 1개뿐일 수 있는 배열은 타입 검사에서 받지 않는다', () => {
+    const one: [number, ...number[]] = [1]
+    // @ts-expect-error an array that may have one item is not a tuple of two or more
+    expectTypeOf(mapTwoOrMore(one, (n) => n)).toBeArray()
   })
 })

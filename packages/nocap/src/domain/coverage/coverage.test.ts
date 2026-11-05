@@ -153,3 +153,41 @@ describe('문제 순서', () => {
     ])
   })
 })
+
+describe('명세 항목마다 판정', () => {
+  it('ID를 가리키는 테스트 항목이 있으면 그 명세 항목을 커버됨으로 판정하고 테스트 항목을 받은 순서대로 담는다', () => {
+    const specItem = spec('A-001')
+    const first = test('A-001', 'a.test.ts')
+    const second = test('A-001', 'b.test.ts')
+
+    const coverage = Coverage.of({ specItems: [specItem], testItems: [first, second] })
+
+    expect(coverage.specJudgments).toEqual([{ kind: 'covered', specItem, testItems: [first, second] }])
+  })
+
+  it('ID를 가리키는 테스트 항목이 없으면 그 명세 항목을 커버되지 않음으로 판정한다', () => {
+    const specItem = spec('A-001')
+
+    const coverage = Coverage.of({ specItems: [specItem], testItems: [test('A-999')] })
+
+    expect(coverage.specJudgments).toEqual([{ kind: 'uncovered-spec', specItem }])
+  })
+
+  it('ID가 같은 명세 항목이 2개이면 테스트 항목이 있어도 두 명세 항목을 모두 중복 ID로 판정한다', () => {
+    const first = spec('A-001', 'a.md')
+    const second = spec('A-001', 'b.md')
+
+    const coverage = Coverage.of({ specItems: [first, second], testItems: [test('A-001')] })
+
+    expect(coverage.specJudgments).toEqual([
+      { kind: 'duplicate-id', specItem: first },
+      { kind: 'duplicate-id', specItem: second },
+    ])
+  })
+
+  it('명세 항목을 받은 순서대로 판정을 담는다', () => {
+    const coverage = Coverage.of({ specItems: [spec('B-001'), spec('A-001')], testItems: [] })
+
+    expect(coverage.specJudgments.map(({ specItem }) => specItem.id.value)).toEqual(['B-001', 'A-001'])
+  })
+})

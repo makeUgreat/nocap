@@ -13,7 +13,7 @@ type PlacedHtml = { readonly html: Html; readonly listItem: ListItem | undefined
 export class SpecDocumentMarkdownParser implements SpecDocumentParser {
   parse(content: string): SpecDocumentParseResult {
     const document = fromMarkdown(content)
-    return { comments: htmlNodesInDocumentOrder(document).flatMap((placed) => commentsOf(placed, content)) }
+    return { comments: htmlNodesInDocumentOrder(document).flatMap((placed) => toSpecComments(placed, content)) }
   }
 }
 
@@ -26,7 +26,7 @@ function htmlNodesInDocumentOrder(node: Nodes, listItem?: ListItem): PlacedHtml[
   return children.flatMap((child) => htmlNodesInDocumentOrder(child, holder))
 }
 
-function commentsOf({ html, listItem }: PlacedHtml, content: string): SpecComment[] {
+function toSpecComments({ html, listItem }: PlacedHtml, content: string): SpecComment[] {
   const placement = placementOf(html, listItem, content)
   return commentsIn(html).map((comment) => ({ ...comment, placement }))
 }

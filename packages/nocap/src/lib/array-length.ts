@@ -10,3 +10,8 @@ export function mapNonEmpty<T, U>(items: readonly [T, ...T[]], map: (item: T) =>
   const [first, ...rest] = items
   return [map(first), ...rest.map(map)]
 }
+
+export function mapTwoOrMore<T, U>(items: readonly [T, T, ...T[]], map: (item: T) => U): [U, U, ...U[]] {
+  const [first, second, ...rest] = items
+  return [map(first), map(second), ...rest.map(map)]
+}
