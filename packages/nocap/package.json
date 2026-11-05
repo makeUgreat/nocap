@@ -1,6 +1,6 @@
 {
   "name": "@makehash/nocap",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Link spec docs to tests, and track which specs are not verified yet",
   "keywords": [
     "spec",
