@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/makeUgreat/nocap/compare/v0.2.0...v0.3.0) (2026-11-05)
+
+
+### Features
+
+* add the checkCoverage library API and run the CLI on it ([#53](https://github.com/makeUgreat/nocap/issues/53)) ([3cb5be4](https://github.com/makeUgreat/nocap/commit/3cb5be4ab816aee1fee879966a7caf22fabf2d56))
+
 ## [0.2.0](https://github.com/makeUgreat/nocap/compare/v0.1.0...v0.2.0) (2026-11-05)
 
 
