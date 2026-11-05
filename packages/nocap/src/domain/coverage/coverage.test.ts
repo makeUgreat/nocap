@@ -173,15 +173,15 @@ describe('명세 항목마다 판정', () => {
     expect(coverage.specJudgments).toEqual([{ kind: 'uncovered-spec', specItem }])
   })
 
-  it('ID가 같은 명세 항목이 2개이면 테스트 항목이 있어도 두 명세 항목을 모두 중복 ID로 판정한다', () => {
+  it('ID가 같은 명세 항목이 2개이면 테스트 항목이 있어도 두 명세 항목을 모두 중복 ID로 판정하고 그 ID의 명세 항목을 받은 순서대로 담는다', () => {
     const first = spec('A-001', 'a.md')
     const second = spec('A-001', 'b.md')
 
     const coverage = Coverage.of({ specItems: [first, second], testItems: [test('A-001')] })
 
     expect(coverage.specJudgments).toEqual([
-      { kind: 'duplicate-id', specItem: first },
-      { kind: 'duplicate-id', specItem: second },
+      { kind: 'duplicate-id', specItem: first, specItems: [first, second] },
+      { kind: 'duplicate-id', specItem: second, specItems: [first, second] },
     ])
   })
 
