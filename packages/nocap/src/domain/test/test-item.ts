@@ -30,12 +30,12 @@ export class TestItem {
       }
 
       const { id } = result.tag
-      const firstTagLine = firstTagLines.get(id.key)
+      const firstTagLine = firstTagLines.get(id.value)
       if (firstTagLine !== undefined) {
         invalidTags.push(invalid({ kind: 'repeated-id', id, firstTagLine }, path, comment))
         continue
       }
-      firstTagLines.set(id.key, comment.line)
+      firstTagLines.set(id.value, comment.line)
       ids.push(id)
     }
 

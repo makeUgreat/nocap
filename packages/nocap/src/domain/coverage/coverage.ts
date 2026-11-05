@@ -47,9 +47,9 @@ export class Coverage {
   }
 
   private static judgeSpecItem(specItem: SpecItem, specGroups: IdGroups<SpecItem>, testGroups: IdGroups<TestItem>): SpecJudgment {
-    const specGroup = specGroups.get(specItem.id.key)
+    const specGroup = specGroups.get(specItem.id.value)
     if (specGroup !== undefined && hasTwoOrMore(specGroup.items)) return { kind: 'duplicate-id', specItem, specItems: specGroup.items }
-    const testGroup = testGroups.get(specItem.id.key)
+    const testGroup = testGroups.get(specItem.id.value)
     if (testGroup !== undefined) return { kind: 'covered', specItem, testItems: testGroup.items }
     return { kind: 'uncovered-spec', specItem }
   }
@@ -72,7 +72,7 @@ export class Coverage {
 
   private static unknownIdsOf(testGroups: IdGroups<TestItem>, specGroups: IdGroups<SpecItem>): UnknownId[] {
     return [...testGroups.values()]
-      .filter(({ id }) => !specGroups.has(id.key))
+      .filter(({ id }) => !specGroups.has(id.value))
       .map(({ id, items }) => ({ kind: 'unknown-id', id, testItems: items }))
   }
 }
@@ -81,8 +81,8 @@ function groupById<T>(items: readonly T[], idsOf: (item: T) => readonly SpecId[]
   const groups = new Map<string, IdGroup<T>>()
   for (const item of items) {
     for (const id of idsOf(item)) {
-      const group = groups.get(id.key)
-      if (group === undefined) groups.set(id.key, { id, items: [item] })
+      const group = groups.get(id.value)
+      if (group === undefined) groups.set(id.value, { id, items: [item] })
       else group.items.push(item)
     }
   }
