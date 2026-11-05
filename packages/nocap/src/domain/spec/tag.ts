@@ -1,6 +1,6 @@
 import type { VocabularyReason } from './invalid-tag.js'
 import { SpecId } from './spec-id.js'
-import { hasTwoOrMore, isNonEmpty } from '../../lib/array-length.js'
+import { hasTwoOrMore } from '../../lib/array-length.js'
 
 const PREFIX = 'nocap:'
 
@@ -25,7 +25,7 @@ export class Tag {
       .split(',')
       .map((value) => value.trim())
       .filter((value) => value !== '')
-    if (isNonEmpty(values) && hasTwoOrMore(values)) {
+    if (hasTwoOrMore(values)) {
       return { kind: 'multiple-ids', values }
     }
 
