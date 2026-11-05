@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.0](https://github.com/makeUgreat/nocap/compare/v0.1.0...v0.2.0) (2026-11-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* take one id per tag and report misplaced tags ([#51](https://github.com/makeUgreat/nocap/issues/51))
+
+### Features
+
+* take one id per tag and report misplaced tags ([#51](https://github.com/makeUgreat/nocap/issues/51)) ([9c14c3d](https://github.com/makeUgreat/nocap/commit/9c14c3d52921dbefd350656ab424128311d0c4f8))
+
 ## 0.1.0 (2026-11-04)
 
 
