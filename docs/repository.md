@@ -55,8 +55,11 @@ flowchart LR
 ```
 
 ## 패키지와 crate
-- 패키지와 crate는 배포에 필요한 파일을 자기 디렉토리에 둠. 예: `README.md`, `LICENSE`, `CHANGELOG.md`
+- 패키지와 crate는 배포에 필요한 파일을 자기 디렉토리에 둠. 예: `LICENSE`, `CHANGELOG.md`
   - npm과 Cargo는 패키지나 crate 디렉토리 안의 파일만 배포 파일에 담음
+- nocap을 소개하는 README는 루트에만 둠. `npm/nocap`은 pack 직전에 루트의 README를 자기 디렉토리로 복사함
+  - GitHub는 루트의 README를 저장소 첫 화면에 보여 줌. npm은 패키지의 README를 패키지 페이지에 보여 줌
+  - 두 곳에 README를 커밋하면 한쪽만 고쳐져 내용이 갈라짐
 - 패키지와 crate는 빌드·테스트 설정을 자기 디렉토리에 둠. 예: `tsconfig.json`, `vitest.config.ts`
   - 패키지마다 의존성과 실행 환경이 다름
 
