@@ -4,6 +4,9 @@ node_modules/
 # Build output
 dist/
 *.tsbuildinfo
+# Copied from the root before npm pack
+/npm/nocap/README.md
+/npm/nocap/README.ko.md
 
 # Test output
 /coverage/

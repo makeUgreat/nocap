@@ -11,7 +11,7 @@
 <br />
 
 <p align="center">
-  🌐 <b>English</b> · <a href="https://github.com/makeUgreat/nocap/blob/master/npm/nocap/README.ko.md">한국어</a>
+  🌐 <b>English</b> · <a href="https://github.com/makeUgreat/nocap/blob/master/README.ko.md">한국어</a>
 </p>
 
 ## Description
