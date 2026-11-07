@@ -18,7 +18,7 @@ importers:
         specifier: 7.0.2005
         version: 7.0.2005
 
-  packages/nocap:
+  npm/nocap:
     dependencies:
       mdast-util-from-markdown:
         specifier: ^2.1.0

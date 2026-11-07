@@ -1,7 +1,7 @@
 ---
 title: 아키텍처
 applies_to:
-  - packages/nocap/src
+  - npm/nocap/src
 read_when:
   - 새 모듈이나 디렉토리를 추가할 때
   - 모듈 사이에 import를 추가할 때
@@ -63,7 +63,7 @@ related:
 - 모든 레이어는 `lib`을 import할 수 있음. `lib`은 `src`에서 `lib` 밖의 코드를 import하지 않음
   - `lib`은 모든 레이어가 쓰는 가장 안쪽 코드임. `lib`이 레이어를 import하면 그 레이어를 거쳐 순환 의존이 생길 수 있음
   - 레이어 지식이 필요한 계산은 `lib`이 아니라 그 레이어에 둠
-- dependency-cruiser가 이 규칙을 검사함. 설정은 `packages/nocap/dependency-cruiser/config.ts`에 있음
+- dependency-cruiser가 이 규칙을 검사함. 설정은 `npm/nocap/dependency-cruiser/config.ts`에 있음
   - type-only import도 의존으로 셈. 레이어 사이 import는 대부분 type-only임
 
 ```mermaid

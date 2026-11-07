@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/@makehash/nocap"><img src="https://img.shields.io/npm/v/@makehash/nocap.svg" alt="npm version" /></a>
   <a href="https://github.com/makeUgreat/nocap/actions/workflows/ci.yml"><img src="https://github.com/makeUgreat/nocap/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-  <a href="https://github.com/makeUgreat/nocap/blob/master/packages/nocap/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Package License" /></a>
+  <a href="https://github.com/makeUgreat/nocap/blob/master/npm/nocap/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Package License" /></a>
 </p>
 
 <br />
@@ -110,4 +110,4 @@ nocap은 두 번째 규칙(`AUTH-002`)에 테스트가 없다고 보고하고 `1
 
 ## 라이선스
 
-nocap은 [MIT 라이선스](https://github.com/makeUgreat/nocap/blob/master/packages/nocap/LICENSE)를 따릅니다.
+nocap은 [MIT 라이선스](https://github.com/makeUgreat/nocap/blob/master/npm/nocap/LICENSE)를 따릅니다.

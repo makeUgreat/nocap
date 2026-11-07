@@ -7,7 +7,7 @@ dist/
 
 # Test output
 /coverage/
-/packages/*/coverage/
+/npm/*/coverage/
 
 # Logs
 *.log

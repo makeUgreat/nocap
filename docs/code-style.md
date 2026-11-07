@@ -1,7 +1,7 @@
 ---
 title: 코드 스타일
 applies_to:
-  - packages/nocap/src
+  - npm/nocap/src
 read_when:
   - 도메인 객체, 실패 처리, 주석을 작성하거나 고칠 때
 related:

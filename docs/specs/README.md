@@ -1,7 +1,7 @@
 ---
 title: nocap 명세
 applies_to:
-  - packages/nocap/src
+  - npm/nocap/src
 read_when:
   - nocap의 동작을 추가하거나 바꿀 때
 related:
