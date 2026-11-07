@@ -55,9 +55,19 @@ jobs:
       - run: pnpm test
       - run: pnpm nocap:run
 
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Installs the toolchain that rust-toolchain.toml pins.
+      - run: rustup toolchain install
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: cargo test --locked
+
   # Runs after the checks so a failing commit never gets a tag or an npm release.
   release-please:
-    needs: [lint, test]
+    needs: [lint, test, rust]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions: {}
