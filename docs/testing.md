@@ -1,7 +1,7 @@
 ---
 title: 테스트 작성 규칙
 applies_to:
-  - packages/nocap의 테스트
+  - npm/nocap의 테스트
 read_when:
   - 테스트를 작성하거나 고칠 때
 related:

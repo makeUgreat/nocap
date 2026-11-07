@@ -3,7 +3,7 @@
   "include-component-in-tag": false,
   "bump-minor-pre-major": true,
   "packages": {
-    "packages/nocap": {
+    "npm/nocap": {
       "release-type": "node",
       "package-name": "@makehash/nocap",
       "initial-version": "0.1.0"

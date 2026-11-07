@@ -1,6 +1,7 @@
 # AGENTS.md
 
 ## 문서
+- [저장소 구조](docs/repository.md): 패키지, crate, 루트 파일을 추가하기 전에 읽음
 - [아키텍처](docs/architecture.md): 코드를 추가하거나 모듈 사이 import를 바꾸기 전에 읽음
 - [코드 스타일](docs/code-style.md): 도메인 객체, 실패 처리, 주석을 작성하거나 고치기 전에 읽음
 - [문서 작성 가이드라인](docs/writing-guide.md): 문서를 쓰거나 고치기 전에 읽음
