@@ -1,0 +1,3 @@
+[package]
+name = "nocap"
+edition.workspace = true

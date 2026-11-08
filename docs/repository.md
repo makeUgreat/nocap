@@ -15,7 +15,7 @@ related:
 
 ## 루트
 - 루트는 pnpm workspace의 루트임
-- (미구현) 루트는 Cargo workspace의 루트이기도 함. 두 workspace는 서로의 설정 파일을 읽지 않음
+- 루트는 Cargo workspace의 루트이기도 함. 두 workspace는 서로의 설정 파일을 읽지 않음
   - Cargo는 `Cargo.toml`이 있는 디렉토리만 crate로 봄. pnpm은 `package.json`이 있는 디렉토리만 패키지로 봄
 - 루트는 배포하지 않음
 - 루트에는 저장소 전체에 적용되는 것만 둠. 예: 포맷·린트 설정, CI, 릴리스 설정, `docs/`
@@ -31,7 +31,7 @@ related:
 | 디렉토리 | 담는 것 | 관리 도구 |
 |---|---|---|
 | `crates/` | (미구현) Rust 라이브러리 crate | Cargo |
-| `apps/` | (미구현) 실행 파일을 만드는 Rust crate | Cargo |
+| `apps/` | 실행 파일을 만드는 Rust crate | Cargo |
 | `npm/` | npm에 배포하는 패키지 | pnpm |
 | `jvm/` | (미구현) JVM 생태계에 배포하는 패키지 | Gradle |
 
@@ -39,12 +39,12 @@ related:
   - Gradle은 빌드 루트에 wrapper와 캐시 디렉토리를 만듦. 저장소 루트에 두면 루트에 세 도구의 파일이 섞임
 
 ## Rust
-> [!NOTE]
-> 이 섹션은 미구현임
-
-- nocap의 핵심 구현은 Rust로 함
+- (미구현) nocap의 핵심 구현은 Rust로 함
   - Rust는 실행 파일 하나로 배포함. Node가 없는 프로젝트에서도 nocap을 실행할 수 있음. 예: Kotlin, Java, Rust 프로젝트
-- npm 사용자는 `npm/`의 패키지로 Rust 실행 파일을 받음
+- Rust 버전은 `rust-toolchain.toml`에 정확한 버전 하나로 고정함. 버전은 PR로 올림
+  - 로컬과 CI가 같은 컴파일러와 clippy를 씀
+  - 새 Rust 버전은 새 clippy lint를 더함. 버전을 고정하지 않으면 코드를 바꾸지 않아도 CI가 깨짐
+- (미구현) npm 사용자는 `npm/`의 패키지로 Rust 실행 파일을 받음
   - CI가 플랫폼마다 실행 파일을 빌드해 `npm/`의 플랫폼 패키지에 넣음. 빌드 결과는 커밋하지 않음
 
 ```mermaid
