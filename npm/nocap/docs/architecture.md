@@ -6,7 +6,7 @@ read_when:
   - 새 모듈이나 디렉토리를 추가할 때
   - 모듈 사이에 import를 추가할 때
 related:
-  - writing-guide.md
+  - ../../../docs/writing-guide.md
   - code-style.md
 ---
 

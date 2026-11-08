@@ -11,7 +11,7 @@
     "lint:package": "pnpm -r lint:package",
     "lint": "oxlint",
     "nocap": "pnpm --filter @makehash/nocap build && pnpm nocap:run",
-    "nocap:run": "node npm/nocap/dist/bin.js --spec \"docs/specs/*.md\" --test \"npm/nocap/src/**/*.test.ts\" --test \"npm/nocap/test/**/*.integration-test.ts\"",
+    "nocap:run": "node npm/nocap/dist/bin.js --spec \"npm/nocap/docs/specs/*.md\" --test \"npm/nocap/src/**/*.test.ts\" --test \"npm/nocap/test/**/*.integration-test.ts\"",
     "format": "oxfmt",
     "format:check": "oxfmt --check"
   },

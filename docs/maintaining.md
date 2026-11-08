@@ -6,7 +6,7 @@ read_when:
   - 브랜치를 만들거나 PR을 열 때
 related:
   - writing-guide.md
-  - testing.md
+  - ../npm/nocap/docs/testing.md
 ---
 
 # 관리 절차

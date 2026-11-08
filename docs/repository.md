@@ -7,7 +7,7 @@ read_when:
   - 패키지나 crate를 추가할 때
   - 루트에 파일을 추가할 때
 related:
-  - architecture.md
+  - ../npm/nocap/docs/architecture.md
   - maintaining.md
 ---
 
@@ -64,5 +64,8 @@ flowchart LR
   - 패키지마다 의존성과 실행 환경이 다름
 
 ## 문서
-- `docs/`는 모든 패키지와 crate가 함께 씀
-  - 명세는 구현 언어와 상관없이 nocap의 동작을 정의함
+- `docs/`에는 저장소 전체와 핵심 구현에 적용되는 문서를 둠. 예: 저장소 구조, 관리 절차
+  - 핵심 구현의 문서는 crate 여러 개에 걸침. crate 하나의 디렉토리에 두면 crate 사이의 규칙을 둘 곳이 없음
+  - 명세는 모든 생태계의 패키지가 내는 nocap의 동작을 정의함
+- 생태계 디렉토리의 패키지에만 적용되는 문서는 그 패키지의 `docs/`에 둠. 예: `npm/nocap/docs/`
+  - 패키지와 핵심 구현의 설계와 동작이 다를 수 있음. 루트에 두면 어느 쪽의 문서인지 알 수 없음

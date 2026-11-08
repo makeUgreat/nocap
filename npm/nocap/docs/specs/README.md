@@ -6,7 +6,7 @@ read_when:
   - nocap의 동작을 추가하거나 바꿀 때
 related:
   - ../architecture.md
-  - ../writing-guide.md
+  - ../../../../docs/writing-guide.md
   - ../syntax.md
 ---
 
