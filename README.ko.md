@@ -105,8 +105,8 @@ nocap은 두 번째 규칙(`AUTH-002`)에 테스트가 없다고 보고하고 `1
 
 ## 문서
 
-- [문법](https://github.com/makeUgreat/nocap/blob/master/docs/syntax.md) - 태그를 두는 위치와 ID 규칙
-- [CLI](https://github.com/makeUgreat/nocap/blob/master/docs/specs/cli.md) - 옵션, 출력 형식, 종료 코드
+- [문법](https://github.com/makeUgreat/nocap/blob/master/npm/nocap/docs/syntax.md) - 태그를 두는 위치와 ID 규칙
+- [CLI](https://github.com/makeUgreat/nocap/blob/master/npm/nocap/docs/specs/cli.md) - 옵션, 출력 형식, 종료 코드
 
 ## 라이선스
 

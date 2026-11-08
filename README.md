@@ -105,8 +105,8 @@ nocap reports that the second rule (`AUTH-002`) has no test, and exits with `1`.
 
 The documentation is in Korean.
 
-- [Syntax](https://github.com/makeUgreat/nocap/blob/master/docs/syntax.md) - where to put tags and which IDs are valid
-- [CLI](https://github.com/makeUgreat/nocap/blob/master/docs/specs/cli.md) - options, output format, and exit codes
+- [Syntax](https://github.com/makeUgreat/nocap/blob/master/npm/nocap/docs/syntax.md) - where to put tags and which IDs are valid
+- [CLI](https://github.com/makeUgreat/nocap/blob/master/npm/nocap/docs/specs/cli.md) - options, output format, and exit codes
 
 ## Stay in touch
 
