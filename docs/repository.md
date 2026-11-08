@@ -2,7 +2,7 @@
 title: 저장소 구조
 applies_to:
   - 저장소 루트
-  - crates/, apps/, npm/, jvm/
+  - crates/, npm/, jvm/
 read_when:
   - 패키지나 crate를 추가할 때
   - 루트에 파일을 추가할 때
@@ -30,8 +30,7 @@ related:
 
 | 디렉토리 | 담는 것 | 관리 도구 |
 |---|---|---|
-| `crates/` | (미구현) Rust 라이브러리 crate | Cargo |
-| `apps/` | 실행 파일을 만드는 Rust crate | Cargo |
+| `crates/` | Rust crate. 실행 파일을 만드는 crate도 포함함 | Cargo |
 | `npm/` | npm에 배포하는 패키지 | pnpm |
 | `jvm/` | (미구현) JVM 생태계에 배포하는 패키지 | Gradle |
 
@@ -49,8 +48,7 @@ related:
 
 ```mermaid
 flowchart LR
-  apps["apps/"] -- "의존" --> crates["crates/"]
-  apps -- "CI가 플랫폼마다 빌드해 넣음" --> platform["npm/ 플랫폼 패키지"]
+  bin["crates/nocap"] -- "CI가 플랫폼마다 빌드해 넣음" --> platform["npm/ 플랫폼 패키지"]
   wrapper["npm/ 래퍼 패키지"] -- "optionalDependencies로 의존" --> platform
 ```
 

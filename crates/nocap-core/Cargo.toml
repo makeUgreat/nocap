@@ -1,0 +1,3 @@
+[package]
+name = "nocap-core"
+edition.workspace = true

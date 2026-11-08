@@ -2,6 +2,7 @@
 
 ## 문서
 - [저장소 구조](docs/repository.md): 패키지, crate, 루트 파일을 추가하기 전에 읽음
+- [아키텍처](docs/architecture.md): crate를 추가하거나 crate 사이의 의존을 바꾸기 전에 읽음
 - [문서 작성 가이드라인](docs/writing-guide.md): 문서를 쓰거나 고치기 전에 읽음
 - [관리 절차](docs/maintaining.md): 브랜치를 만들거나 PR을 열기 전에 읽음
 
